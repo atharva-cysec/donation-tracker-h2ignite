@@ -6,7 +6,7 @@ import { useWallet } from '../../context/WalletContext';
  * Helper to shorten an Ethereum address to 0x1234...ABCD
  */
 export function shortenAddress(address) {
-  if (!address) return '';
+  if (!address || typeof address !== 'string') return '';
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
 }
 

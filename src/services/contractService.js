@@ -4,6 +4,7 @@ import {
   SEPOLIA_RPC_URL,
   SEPOLIA_RPC_FALLBACKS,
   SEPOLIA_CHAIN_ID,
+  DEMO_DONATION_ETH,
 } from '../config/blockchain.js';
 import DonationTrackerABI from '../contracts/DonationTrackerABI.json' with { type: 'json' };
 
@@ -39,7 +40,6 @@ export function getReadOnlyProvider() {
     return cachedProvider;
   } catch (error) {
     console.warn('Failed to initialize primary RPC provider, falling back to secondary:', error);
-    // Fallback if primary construction throws
     const fallbackUrl = SEPOLIA_RPC_FALLBACKS[1] || 'https://rpc.sepolia.org';
     cachedProvider = new ethers.JsonRpcProvider(fallbackUrl, {
       chainId: SEPOLIA_CHAIN_ID,
@@ -56,6 +56,125 @@ export function getReadOnlyProvider() {
 export function getReadOnlyContract(customProvider = null) {
   const provider = customProvider || getReadOnlyProvider();
   return new ethers.Contract(CONTRACT_ADDRESS, DonationTrackerABI, provider);
+}
+
+/**
+ * Returns an ethers.Contract instance connected to an active signer for write transactions.
+ * @param {ethers.Signer} [customSigner]
+ * @returns {Promise<ethers.Contract>}
+ */
+export async function getWriteContract(customSigner = null) {
+  let signer = customSigner;
+  if (!signer) {
+    if (typeof window === 'undefined' || !window.ethereum) {
+      throw new Error('An Ethereum wallet extension is required.');
+    }
+    const browserProvider = new ethers.BrowserProvider(window.ethereum);
+    signer = await browserProvider.getSigner();
+  }
+  return new ethers.Contract(CONTRACT_ADDRESS, DonationTrackerABI, signer);
+}
+
+/**
+ * Parses contract transaction errors into human-readable messages.
+ * Handles user cancellations, insufficient funds, and network errors gracefully.
+ * @param {any} error
+ * @returns {string}
+ */
+export function parseContractError(error) {
+  if (!error) return 'An unexpected transaction error occurred.';
+
+  // User rejected transaction in MetaMask (EIP-1193 error code 4001)
+  if (
+    error.code === 4001 ||
+    error.info?.error?.code === 4001 ||
+    error.message?.toLowerCase().includes('user rejected') ||
+    error.message?.toLowerCase().includes('cancelled')
+  ) {
+    return 'Transaction cancelled. No blockchain donation was submitted.';
+  }
+
+  // Insufficient funds for gas or value
+  if (
+    error.code === 'INSUFFICIENT_FUNDS' ||
+    error.message?.toLowerCase().includes('insufficient funds')
+  ) {
+    return 'Insufficient Sepolia test ETH for this transaction. Please ensure your wallet has at least 0.001 Sepolia ETH plus gas fees.';
+  }
+
+  // Pending request already in wallet
+  if (error.code === -32002) {
+    return 'A wallet request is already pending. Please check your MetaMask extension.';
+  }
+
+  return error.reason || error.message || 'Donation transaction failed. Please try again.';
+}
+
+/**
+ * Submits a real donation transaction to the DonationTracker contract on Sepolia.
+ * Calls `donate()` with payable ETH value.
+ *
+ * @param {Object} options
+ * @param {ethers.Signer} [options.signer] - Connected signer
+ * @param {string} [options.ethAmount] - ETH amount (defaults to DEMO_DONATION_ETH: "0.001")
+ * @param {function} [options.onStatusChange] - Callback with { status, message, transactionHash }
+ * @returns {Promise<{ success: boolean, transactionHash: string, blockNumber: number, receipt: any }>}
+ */
+export async function submitDonation({
+  signer = null,
+  ethAmount = DEMO_DONATION_ETH,
+  onStatusChange = () => {},
+} = {}) {
+  try {
+    onStatusChange('preparing', {
+      message: 'Preparing donation...',
+    });
+
+    const contract = await getWriteContract(signer);
+
+    onStatusChange('waiting_wallet', {
+      message: 'Waiting for wallet confirmation...',
+    });
+
+    const value = ethers.parseEther(ethAmount);
+    const tx = await contract.donate({ value });
+
+    onStatusChange('submitted', {
+      message: 'Transaction submitted...',
+      transactionHash: tx.hash,
+    });
+
+    onStatusChange('confirming', {
+      message: 'Confirming on Sepolia...',
+      transactionHash: tx.hash,
+    });
+
+    const receipt = await tx.wait(1);
+
+    if (!receipt || receipt.status === 0) {
+      throw new Error('Transaction was reverted on the blockchain.');
+    }
+
+    onStatusChange('confirmed', {
+      message: 'Donation confirmed',
+      transactionHash: tx.hash,
+      blockNumber: receipt.blockNumber,
+    });
+
+    return {
+      success: true,
+      transactionHash: tx.hash,
+      blockNumber: receipt.blockNumber,
+      receipt,
+    };
+  } catch (error) {
+    const friendlyMsg = parseContractError(error);
+    onStatusChange('error', {
+      message: friendlyMsg,
+      error,
+    });
+    throw new Error(friendlyMsg);
+  }
 }
 
 /**

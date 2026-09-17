@@ -158,71 +158,114 @@ export function WalletProvider({ children }) {
     setWalletError(null);
   }, []);
 
+  const parseChainId = (val) => {
+    if (!val && val !== 0) return null;
+    if (typeof val === 'number') return val;
+    if (typeof val === 'string') {
+      return val.startsWith('0x') ? parseInt(val, 16) : parseInt(val, 10);
+    }
+    return null;
+  };
+
   /**
    * EIP-1193 Event Listeners:
-   * Listen to accountsChanged and chainChanged
+   * Listen to accountsChanged and chainChanged defensively
    */
   useEffect(() => {
-    if (typeof window === 'undefined' || !window.ethereum) {
-      return;
-    }
+    try {
+      if (typeof window === 'undefined' || !window.ethereum) {
+        return;
+      }
 
-    // Silent check if user already connected previously (eth_accounts does not trigger modal)
-    window.ethereum
-      .request({ method: 'eth_accounts' })
-      .then(async (accounts) => {
-        if (accounts && accounts.length > 0) {
-          try {
-            const browserProvider = new ethers.BrowserProvider(window.ethereum);
-            const network = await browserProvider.getNetwork();
+      const provider = window.ethereum;
+
+      // Safe silent check if user already connected previously
+      if (typeof provider.request === 'function') {
+        provider
+          .request({ method: 'eth_accounts' })
+          .then((accounts) => {
+            if (accounts && Array.isArray(accounts) && accounts.length > 0) {
+              setAccount(accounts[0]);
+              provider
+                .request({ method: 'eth_chainId' })
+                .then((hex) => {
+                  const id = parseChainId(hex);
+                  if (id) setChainId(id);
+                })
+                .catch(() => {});
+            }
+          })
+          .catch((e) => {
+            console.warn('Could not check eth_accounts:', e);
+          });
+      }
+
+      const handleAccountsChanged = (accounts) => {
+        try {
+          if (accounts && Array.isArray(accounts) && accounts.length > 0) {
             setAccount(accounts[0]);
-            setChainId(Number(network.chainId));
-          } catch (e) {
-            console.warn('Could not auto-restore wallet session:', e);
+          } else {
+            // Disconnected or wallet locked
+            setAccount(null);
+            setChainId(null);
           }
+        } catch (err) {
+          console.warn('Error handling accountsChanged:', err);
         }
-      })
-      .catch((e) => {
-        console.warn('Could not check eth_accounts:', e);
-      });
+      };
 
-    const handleAccountsChanged = (accounts) => {
-      if (accounts && accounts.length > 0) {
-        setAccount(accounts[0]);
-      } else {
-        // Disconnected or wallet locked
-        setAccount(null);
-        setChainId(null);
+      const handleChainChanged = (newChainIdVal) => {
+        try {
+          const id = parseChainId(newChainIdVal);
+          if (id) setChainId(id);
+        } catch (err) {
+          console.warn('Error handling chainChanged:', err);
+        }
+      };
+
+      if (typeof provider.on === 'function') {
+        provider.on('accountsChanged', handleAccountsChanged);
+        provider.on('chainChanged', handleChainChanged);
       }
-    };
 
-    const handleChainChanged = (newChainIdHex) => {
-      const newId = parseInt(newChainIdHex, 16);
-      setChainId(newId);
-    };
-
-    window.ethereum.on('accountsChanged', handleAccountsChanged);
-    window.ethereum.on('chainChanged', handleChainChanged);
-
-    return () => {
-      if (window.ethereum?.removeListener) {
-        window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
-        window.ethereum.removeListener('chainChanged', handleChainChanged);
-      }
-    };
+      return () => {
+        try {
+          if (typeof provider.removeListener === 'function') {
+            provider.removeListener('accountsChanged', handleAccountsChanged);
+            provider.removeListener('chainChanged', handleChainChanged);
+          } else if (typeof provider.off === 'function') {
+            provider.off('accountsChanged', handleAccountsChanged);
+            provider.off('chainChanged', handleChainChanged);
+          }
+        } catch (e) {
+          // Ignore cleanup errors from third-party extensions
+        }
+      };
+    } catch (err) {
+      console.warn('Wallet initialization error handled safely:', err);
+    }
   }, []);
 
   const getProvider = useCallback(() => {
-    if (typeof window !== 'undefined' && window.ethereum) {
-      return new ethers.BrowserProvider(window.ethereum);
+    try {
+      if (typeof window !== 'undefined' && window.ethereum) {
+        return new ethers.BrowserProvider(window.ethereum);
+      }
+    } catch (e) {
+      console.warn('Could not create BrowserProvider:', e);
     }
     return null;
   }, []);
 
   const getSigner = useCallback(async () => {
-    const p = getProvider();
-    if (!p) return null;
-    return await p.getSigner();
+    try {
+      const p = getProvider();
+      if (!p) return null;
+      return await p.getSigner();
+    } catch (e) {
+      console.warn('Could not getSigner:', e);
+      return null;
+    }
   }, [getProvider]);
 
   const value = {

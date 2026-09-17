@@ -16,6 +16,32 @@ export const SEPOLIA_RPC_FALLBACKS = [
 
 export const SEPOLIA_EXPLORER_URL = 'https://sepolia.etherscan.io';
 
+/**
+ * Standard testnet ETH value submitted per blockchain donation demo.
+ * The donor's selected INR (₹) amount remains the primary campaign contribution.
+ */
+export const DEMO_DONATION_ETH = '0.001';
+
+/**
+ * Helper to build Etherscan URL for a transaction hash
+ * @param {string} txHash
+ * @returns {string}
+ */
+export function getExplorerTxUrl(txHash) {
+  if (!txHash) return SEPOLIA_EXPLORER_URL;
+  return `${SEPOLIA_EXPLORER_URL}/tx/${txHash}`;
+}
+
+/**
+ * Helper to build Etherscan URL for an address
+ * @param {string} address
+ * @returns {string}
+ */
+export function getExplorerAddressUrl(address) {
+  if (!address) return SEPOLIA_EXPLORER_URL;
+  return `${SEPOLIA_EXPLORER_URL}/address/${address}`;
+}
+
 export const BLOCKCHAIN_CONFIG = {
   contractAddress: CONTRACT_ADDRESS,
   chainId: SEPOLIA_CHAIN_ID,
@@ -23,6 +49,7 @@ export const BLOCKCHAIN_CONFIG = {
   rpcUrl: SEPOLIA_RPC_URL,
   rpcFallbacks: SEPOLIA_RPC_FALLBACKS,
   explorerUrl: SEPOLIA_EXPLORER_URL,
+  demoDonationEth: DEMO_DONATION_ETH,
   networkName: 'Ethereum Sepolia',
 };
 

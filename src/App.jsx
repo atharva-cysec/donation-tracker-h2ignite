@@ -12,13 +12,15 @@ import DonationDetailsPage from './pages/DonationDetailsPage';
 import SettingsPage from './pages/SettingsPage';
 import SupportPage from './pages/SupportPage';
 import NotFoundPage from './pages/NotFoundPage';
+import ErrorBoundary from './components/common/ErrorBoundary';
 
 function App() {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <WalletProvider>
-          <Routes>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <AuthProvider>
+          <WalletProvider>
+            <Routes>
           {/* ── Public routes ── */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
@@ -87,7 +89,8 @@ function App() {
         </Routes>
         </WalletProvider>
       </AuthProvider>
-    </BrowserRouter>
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 }
 

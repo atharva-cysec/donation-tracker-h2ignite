@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
   ShieldCheck,
@@ -7,10 +7,13 @@ import {
   MapPin,
   Heart,
   CheckCircle2,
-  Clock,
-  Circle,
   X,
   Sparkles,
+  Wallet,
+  AlertCircle,
+  AlertTriangle,
+  Loader2,
+  ExternalLink,
 } from 'lucide-react';
 import MainLayout from '../components/layout/MainLayout';
 import Button from '../components/ui/Button';
@@ -18,6 +21,13 @@ import { MOCK_CAUSES } from '../data/mockCauses';
 import { formatINR } from '../components/dashboard/DonationCard';
 import { addDemoDonation } from '../data/mockDonations';
 import { useAuth } from '../context/AuthContext';
+import { useWallet } from '../context/WalletContext';
+import { submitDonation } from '../services/contractService';
+import {
+  DEMO_DONATION_ETH,
+  SEPOLIA_CHAIN_ID,
+  getExplorerTxUrl,
+} from '../config/blockchain';
 
 const PRESET_AMOUNTS = [500, 1000, 2000, 5000];
 
@@ -34,6 +44,14 @@ export default function CauseDetailsPage() {
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [donationSuccess, setDonationSuccess] = useState(null);
+
+  // Blockchain transaction states
+  const [_txStatus, setTxStatus] = useState(null); // 'preparing' | 'waiting_wallet' | 'submitted' | 'confirming' | 'confirmed' | 'error'
+  const [txStatusMessage, setTxStatusMessage] = useState('');
+  const [txHash, setTxHash] = useState(null);
+  const [txError, setTxError] = useState(null);
+
+  const { account, isConnected, isSepolia, connectWallet, switchToSepolia, getSigner } = useWallet();
 
   if (!cause) {
     return (
@@ -69,26 +87,83 @@ export default function CauseDetailsPage() {
 
   const handleOpenConfirm = () => {
     if (effectiveAmount > 0) {
+      setTxStatus(null);
+      setTxStatusMessage('');
+      setTxHash(null);
+      setTxError(null);
       setIsConfirmModalOpen(true);
     }
   };
 
   const handleConfirmDonation = async () => {
+    setTxError(null);
+
+    // 1. If wallet not connected, prompt to connect
+    if (!isConnected) {
+      const res = await connectWallet();
+      if (!res.success) {
+        setTxError(res.error || 'Please connect your Ethereum wallet to continue.');
+        return;
+      }
+    }
+
+    // 2. If connected but wrong network, prompt to switch
+    if (!isSepolia) {
+      const switchRes = await switchToSepolia();
+      if (!switchRes.success) {
+        setTxError(switchRes.error || 'Please switch your wallet network to Ethereum Sepolia.');
+        return;
+      }
+    }
+
     setIsSubmitting(true);
-    // Simulate brief processing delay
-    await new Promise((resolve) => setTimeout(resolve, 600));
+    setTxStatus('preparing');
+    setTxStatusMessage('Preparing donation...');
 
-    // Record demo donation
-    const record = addDemoDonation({
-      cause: cause.title,
-      ngo: cause.ngo,
-      amount: effectiveAmount,
-      userId: user?.id,
-    });
+    try {
+      const signer = await getSigner();
+      if (!signer) {
+        throw new Error('Unable to access wallet signer. Please unlock MetaMask.');
+      }
 
-    setIsSubmitting(false);
-    setIsConfirmModalOpen(false);
-    setDonationSuccess(record);
+      const result = await submitDonation({
+        signer,
+        ethAmount: DEMO_DONATION_ETH,
+        onStatusChange: (statusKey, details) => {
+          setTxStatus(statusKey);
+          if (details?.message) setTxStatusMessage(details.message);
+          if (details?.transactionHash) setTxHash(details.transactionHash);
+        },
+      });
+
+      // Real transaction confirmed on Sepolia!
+      const currentAccount = account || (await signer.getAddress());
+      const blockchainMetadata = {
+        verified: true,
+        network: 'Ethereum Sepolia',
+        chainId: SEPOLIA_CHAIN_ID,
+        transactionHash: result.transactionHash,
+        walletAddress: currentAccount,
+        testEthAmount: DEMO_DONATION_ETH,
+      };
+
+      const record = addDemoDonation({
+        cause: cause.title,
+        ngo: cause.ngo,
+        amount: effectiveAmount,
+        userId: user?.id,
+        blockchain: blockchainMetadata,
+      });
+
+      setIsSubmitting(false);
+      setIsConfirmModalOpen(false);
+      setDonationSuccess(record);
+    } catch (err) {
+      console.error('Donation submission error:', err);
+      setIsSubmitting(false);
+      setTxError(err.message || 'Donation transaction could not be completed.');
+      setTxStatus('error');
+    }
   };
 
   return (
@@ -321,7 +396,7 @@ export default function CauseDetailsPage() {
               </Button>
 
               <p className="text-[11px] text-[#9BAB9E] text-center mt-3 leading-relaxed">
-                Frontend demonstration prototype. No actual debit occurs.
+                Testnet demonstration · Submits {DEMO_DONATION_ETH} Sepolia ETH on-chain
               </p>
             </div>
           </div>
@@ -350,11 +425,12 @@ export default function CauseDetailsPage() {
             <h3 id="confirm-donation-title" className="text-lg font-bold text-[#1D2925] mb-1">
               Confirm Your Donation
             </h3>
-            <p className="text-xs text-[#68746F] mb-5 leading-relaxed">
-              Review your donation details before proceeding with this demonstration.
+            <p className="text-xs text-[#68746F] mb-4 leading-relaxed">
+              Review your donation details and blockchain transaction before proceeding.
             </p>
 
-            <div className="bg-[#FAFAF7] rounded-xl border border-[#E4E8E5] p-4 space-y-3 mb-5 text-xs">
+            {/* Donation Summary Box */}
+            <div className="bg-[#FAFAF7] rounded-xl border border-[#E4E8E5] p-4 space-y-2.5 mb-4 text-xs">
               <div className="flex justify-between">
                 <span className="text-[#68746F]">Cause:</span>
                 <strong className="text-[#1D2925] text-right max-w-[220px] truncate">
@@ -366,16 +442,96 @@ export default function CauseDetailsPage() {
                 <strong className="text-[#1D2925]">{cause.ngo}</strong>
               </div>
               <div className="flex justify-between pt-2 border-t border-[#E4E8E5]">
-                <span className="text-[#68746F] font-semibold text-sm">Amount:</span>
+                <span className="text-[#68746F] font-semibold text-sm">Campaign Amount:</span>
                 <strong className="text-base font-bold text-[#2F7D5B]">
                   {formatINR(effectiveAmount)}
                 </strong>
               </div>
             </div>
 
-            <p className="text-[11px] text-[#68746F] bg-[#EAF3EE] text-[#2F7D5B] p-2.5 rounded-lg mb-6 leading-relaxed font-medium">
-              Note: This is a frontend demo. No real financial or blockchain transaction will occur.
-            </p>
+            {/* Sepolia Testnet Notice */}
+            <div className="bg-[#EAF3EE] rounded-xl border border-[#C8DFD2] p-3 mb-4 text-xs">
+              <div className="flex items-center gap-1.5 font-bold text-[#2F7D5B] mb-1">
+                <ShieldCheck className="w-4 h-4 shrink-0" />
+                <span>Sepolia Blockchain Verification</span>
+              </div>
+              <p className="text-[#1D2925] leading-relaxed text-[11px]">
+                Blockchain demo: this donation will submit {DEMO_DONATION_ETH} Sepolia ETH as a testnet transaction. Your selected {formatINR(effectiveAmount)} amount remains the TrustDonate donation amount.
+              </p>
+            </div>
+
+            {/* Wallet Status Notice / Connect Prompt */}
+            <div className="mb-4">
+              {!isConnected ? (
+                <div className="bg-[#FFFBEB] border border-[#FDE68A] rounded-xl p-3 text-xs flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 text-[#92400E]">
+                    <AlertTriangle className="w-4 h-4 shrink-0 text-[#D97706]" />
+                    <span className="font-medium">Wallet not connected</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={connectWallet}
+                    className="text-xs font-bold text-[#2F7D5B] hover:text-[#27684C] bg-white px-3 py-1.5 rounded-lg border border-[#E4E8E5] shadow-2xs cursor-pointer"
+                  >
+                    Connect MetaMask
+                  </button>
+                </div>
+              ) : !isSepolia ? (
+                <div className="bg-[#FFFBEB] border border-[#FDE68A] rounded-xl p-3 text-xs flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 text-[#92400E]">
+                    <AlertTriangle className="w-4 h-4 shrink-0 text-[#D97706]" />
+                    <span className="font-medium">Wrong network</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={switchToSepolia}
+                    className="text-xs font-bold text-[#2F7D5B] hover:text-[#27684C] bg-white px-3 py-1.5 rounded-lg border border-[#E4E8E5] shadow-2xs cursor-pointer"
+                  >
+                    Switch to Sepolia
+                  </button>
+                </div>
+              ) : (
+                <div className="bg-[#FAFAF7] border border-[#E4E8E5] rounded-xl p-2.5 text-xs flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-[#68746F]">
+                    <Wallet className="w-3.5 h-3.5 text-[#2F7D5B]" />
+                    <span>Wallet:</span>
+                    <span className="font-mono text-[#1D2925] font-semibold">
+                      {account ? `${account.slice(0, 6)}...${account.slice(-4)}` : ''}
+                    </span>
+                  </div>
+                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#2F7D5B] bg-[#EAF3EE] px-2 py-0.5 rounded-full border border-[#C8DFD2]">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#2F7D5B]" />
+                    Sepolia
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* In-Flight Transaction State */}
+            {isSubmitting && (
+              <div className="bg-[#FAFAF7] border border-[#2F7D5B]/30 rounded-xl p-4 mb-4 text-center">
+                <Loader2 className="w-6 h-6 animate-spin text-[#2F7D5B] mx-auto mb-2" />
+                <p className="text-xs font-bold text-[#1D2925]">
+                  {txStatusMessage || 'Processing donation...'}
+                </p>
+                {txHash && (
+                  <p className="text-[11px] text-[#68746F] mt-1 font-mono">
+                    Tx: {txHash.slice(0, 10)}...{txHash.slice(-8)}
+                  </p>
+                )}
+                <p className="text-[10px] text-[#9BAB9E] mt-1">
+                  Please keep this window open until confirmation completes
+                </p>
+              </div>
+            )}
+
+            {/* Error Message */}
+            {txError && (
+              <div className="bg-[#FEF2F2] border border-[#FCA5A5] rounded-xl p-3 mb-4 text-xs text-[#991B1B] flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                <p className="leading-relaxed font-medium">{txError}</p>
+              </div>
+            )}
 
             <div className="flex items-center gap-3">
               <Button
@@ -391,10 +547,15 @@ export default function CauseDetailsPage() {
                 variant="primary"
                 size="md"
                 onClick={handleConfirmDonation}
+                disabled={isSubmitting}
                 loading={isSubmitting}
                 className="flex-1"
               >
-                Confirm Donation
+                {!isConnected
+                  ? 'Connect Wallet'
+                  : !isSepolia
+                  ? 'Switch to Sepolia'
+                  : `Confirm Donation (${DEMO_DONATION_ETH} ETH)`}
               </Button>
             </div>
           </div>
@@ -413,19 +574,19 @@ export default function CauseDetailsPage() {
               <CheckCircle2 className="w-7 h-7" />
             </div>
 
-            <span className="inline-block text-[11px] uppercase tracking-wider font-bold text-[#2F7D5B] bg-[#EAF3EE] px-3 py-0.5 rounded-full mb-2">
-              Demo Contribution
+            <span className="inline-block text-[11px] uppercase tracking-wider font-bold text-[#2F7D5B] bg-[#EAF3EE] px-3 py-0.5 rounded-full mb-2 border border-[#C8DFD2]">
+              {donationSuccess.blockchain?.verified ? 'Recorded on Blockchain' : 'Contribution Confirmed'}
             </span>
 
             <h3 className="text-xl font-bold text-[#1D2925] mb-1">
               Thank you for supporting this cause.
             </h3>
-            <p className="text-xs text-[#68746F] mb-6 leading-relaxed max-w-xs mx-auto">
+            <p className="text-xs text-[#68746F] mb-5 leading-relaxed max-w-xs mx-auto">
               Your contribution doesn't disappear after you donate. Follow its progress and milestone updates directly through your Impact Tracker.
             </p>
 
             {/* Donation Summary Box */}
-            <div className="bg-[#FAFAF7] rounded-xl border border-[#E4E8E5] p-4 text-left space-y-2 mb-6 text-xs">
+            <div className="bg-[#FAFAF7] rounded-xl border border-[#E4E8E5] p-4 text-left space-y-2 mb-4 text-xs">
               <div className="flex justify-between items-baseline">
                 <span className="text-[#68746F]">Amount:</span>
                 <span className="text-base font-bold text-[#2F7D5B]">
@@ -445,6 +606,45 @@ export default function CauseDetailsPage() {
                 </span>
               </div>
             </div>
+
+            {/* Secondary Blockchain Confirmation */}
+            {donationSuccess.blockchain?.verified && (
+              <div className="bg-[#FAFAF7] rounded-xl border border-[#C8DFD2] p-3.5 mb-6 text-left text-xs space-y-2">
+                <div className="flex items-center justify-between pb-2 border-b border-[#E4E8E5]">
+                  <span className="font-bold text-[#2F7D5B] flex items-center gap-1.5 text-[11px]">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    Recorded on Ethereum Sepolia
+                  </span>
+                  <span className="text-[11px] text-[#68746F] font-semibold">
+                    {donationSuccess.blockchain.testEthAmount} Sepolia ETH
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="text-[#68746F]">Transaction:</span>
+                  <span
+                    className="font-mono text-[#1D2925] font-medium"
+                    title={donationSuccess.blockchain.transactionHash}
+                  >
+                    {donationSuccess.blockchain.transactionHash
+                      ? `${donationSuccess.blockchain.transactionHash.slice(0, 10)}...${donationSuccess.blockchain.transactionHash.slice(-8)}`
+                      : '—'}
+                  </span>
+                </div>
+                <div className="pt-1 text-right">
+                  {donationSuccess.blockchain.transactionHash && (
+                    <a
+                      href={getExplorerTxUrl(donationSuccess.blockchain.transactionHash)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-[11px] font-bold text-[#2F7D5B] hover:text-[#27684C] cursor-pointer"
+                    >
+                      <span>View on Sepolia Etherscan</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Action buttons */}
             <div className="flex flex-col sm:flex-row items-center gap-3">

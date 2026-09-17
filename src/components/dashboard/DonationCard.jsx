@@ -118,9 +118,17 @@ export function DonationActivityList({
                   }`}
                 >
                   <td className="py-4 px-5">
-                    <p className="font-semibold text-[#1D2925] leading-tight">
-                      {d.cause}
-                    </p>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="font-semibold text-[#1D2925] leading-tight">
+                        {d.cause}
+                      </p>
+                      {d.blockchain?.verified && (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-[#2F7D5B] bg-[#EAF3EE] px-2 py-0.5 rounded-full border border-[#C8DFD2] shrink-0">
+                          <CheckCircle2 className="w-3 h-3 text-[#2F7D5B]" />
+                          Verified on blockchain
+                        </span>
+                      )}
+                    </div>
                     <p className="text-xs text-[#68746F] mt-0.5 md:hidden">
                       {d.ngo} · {d.date}
                     </p>
@@ -207,9 +215,17 @@ export default function DonationCard({ donation, onCheckStatus, isSelected }) {
           <p className="text-xl font-bold text-[#1D2925] leading-none">
             {formatINR(donation.amount)}
           </p>
-          <p className="text-sm font-semibold text-[#1D2925] mt-1">
-            {donation.cause}
-          </p>
+          <div className="flex flex-wrap items-center gap-2 mt-1">
+            <p className="text-sm font-semibold text-[#1D2925]">
+              {donation.cause}
+            </p>
+            {donation.blockchain?.verified && (
+              <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-[#2F7D5B] bg-[#EAF3EE] px-2 py-0.5 rounded-full border border-[#C8DFD2] shrink-0">
+                <CheckCircle2 className="w-3 h-3" />
+                Verified on blockchain
+              </span>
+            )}
+          </div>
         </div>
         <StatusBadge status={donation.status} />
       </div>

@@ -141,7 +141,7 @@ export function getDonationById(id, explicitUserId) {
 /**
  * Add a simulated demo donation to localStorage for the target user.
  */
-export function addDemoDonation({ cause, ngo, amount, userId }) {
+export function addDemoDonation({ cause, ngo, amount, userId, blockchain = null }) {
   const targetUserId = getActiveUserId(userId) || 'demo-user';
   const current = getStoredDonations(targetUserId);
   const randomSuffix = Math.random().toString(36).substring(2, 6);
@@ -153,8 +153,11 @@ export function addDemoDonation({ cause, ngo, amount, userId }) {
     ngo,
     status: 'In Progress',
     date: 'Just now',
-    description: `Demo contribution towards verified milestones for ${cause}.`,
+    description: blockchain?.verified
+      ? `Contribution towards verified milestones for ${cause}. Recorded on Ethereum Sepolia.`
+      : `Demo contribution towards verified milestones for ${cause}.`,
     currentStep: 1, // Newly made donation starts at Step 1: Donation Received
+    blockchain: blockchain || null,
   };
 
   const updated = [newRecord, ...current];
