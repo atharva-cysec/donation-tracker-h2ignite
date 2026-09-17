@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 /**
  * Footer — Minimal, understated brand footer for TrustDonate.
  * Focuses on the core ethos: "Give. Track. Trust."
@@ -9,9 +11,16 @@ export default function Footer() {
         <p className="text-sm font-semibold tracking-wider text-[#1D2925] uppercase">
           Give. Track. Trust.
         </p>
-        <p className="text-xs text-[#68746F] mt-1.5">
-          © 2026 TrustDonate · Verified Donation Transparency
-        </p>
+        <div className="flex items-center justify-center gap-3 mt-1.5 text-xs text-[#68746F]">
+          <span>© 2026 TrustDonate</span>
+          <span>·</span>
+          <Link
+            to="/support"
+            className="hover:text-[#2F7D5B] transition-colors underline-offset-2 hover:underline"
+          >
+            Help & Support
+          </Link>
+        </div>
       </div>
     </footer>
   );

@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Heart, ArrowRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -123,15 +123,16 @@ function Dashboard() {
   const trackerRef = useRef(null);
   const firstName = user?.name?.split(' ')[0] ?? 'there';
 
-  const donations = getStoredDonations();
+  const donations = useMemo(() => getStoredDonations(), []);
 
   // Active donation selected for the Impact Tracker
   const [selectedDonation, setSelectedDonation] = useState(null);
 
-  // Handle cross-page navigation state from My Donations or Cause Details
+  // Handle cross-page navigation state from My Donations or Cause Details safely
   useEffect(() => {
-    if (location.state?.selectedDonationId) {
-      const target = donations.find((d) => d.id === location.state.selectedDonationId);
+    const targetId = location.state?.selectedDonationId;
+    if (targetId && selectedDonation?.id !== targetId) {
+      const target = donations.find((d) => d.id === targetId);
       if (target) {
         setSelectedDonation(target);
         if (location.state.scrollToTracker) {
@@ -141,7 +142,7 @@ function Dashboard() {
         }
       }
     }
-  }, [location.state, donations]);
+  }, [location.state?.selectedDonationId, location.state?.scrollToTracker, donations, selectedDonation?.id]);
 
   const handleCheckStatus = (donation) => {
     setSelectedDonation(donation);

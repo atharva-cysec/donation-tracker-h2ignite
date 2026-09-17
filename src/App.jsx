@@ -9,6 +9,7 @@ import CauseDetailsPage from './pages/CauseDetailsPage';
 import MyDonationsPage from './pages/MyDonationsPage';
 import DonationDetailsPage from './pages/DonationDetailsPage';
 import SettingsPage from './pages/SettingsPage';
+import SupportPage from './pages/SupportPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 function App() {
@@ -66,6 +67,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <SettingsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/support"
+            element={
+              <ProtectedRoute>
+                <SupportPage />
               </ProtectedRoute>
             }
           />

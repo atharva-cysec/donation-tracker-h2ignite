@@ -4,6 +4,7 @@ import {
   Heart,
   ClipboardList,
   Settings,
+  CircleHelp,
   LogOut,
   ShieldCheck,
   X,
@@ -11,10 +12,11 @@ import {
 import { useAuth } from '../../context/AuthContext';
 
 const NAV_ITEMS = [
-  { label: 'Dashboard',    icon: LayoutDashboard, to: '/dashboard'    },
-  { label: 'Causes',       icon: Heart,           to: '/causes'       },
-  { label: 'My Donations', icon: ClipboardList,   to: '/my-donations' },
-  { label: 'Settings',     icon: Settings,        to: '/settings'     },
+  { label: 'Dashboard',      icon: LayoutDashboard, to: '/dashboard'    },
+  { label: 'Causes',         icon: Heart,           to: '/causes'       },
+  { label: 'My Donations',   icon: ClipboardList,   to: '/my-donations' },
+  { label: 'Settings',       icon: Settings,        to: '/settings'     },
+  { label: 'Help & Support', icon: CircleHelp,      to: '/support'      },
 ];
 
 // ─── Nav link ─────────────────────────────────────────────────────────────────

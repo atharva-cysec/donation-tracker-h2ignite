@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ShieldCheck, Lock, ExternalLink, Calendar, Heart } from 'lucide-react';
+import { ArrowLeft, ShieldCheck, Lock, ExternalLink, Calendar, Heart, CircleHelp } from 'lucide-react';
 import MainLayout from '../components/layout/MainLayout';
 import ImpactTracker from '../components/dashboard/ImpactTracker';
 import { formatINR, StatusBadge } from '../components/dashboard/DonationCard';
@@ -134,6 +134,22 @@ export default function DonationDetailsPage() {
           </div>
         </div>
       </section>
+
+      {/* ─── Subtle Quick Help Action ─── */}
+      <div className="mt-5 text-center">
+        <button
+          type="button"
+          onClick={() =>
+            navigate('/support', {
+              state: { preselectedDonationId: donation.id },
+            })
+          }
+          className="text-xs text-[#68746F] hover:text-[#2F7D5B] transition-colors inline-flex items-center gap-1.5 cursor-pointer underline-offset-2 hover:underline"
+        >
+          <CircleHelp className="w-3.5 h-3.5" />
+          <span>Need help with this donation?</span>
+        </button>
+      </div>
     </MainLayout>
   );
 }
