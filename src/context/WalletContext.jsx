@@ -1,9 +1,16 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { ethers } from 'ethers';
 
-// ─── Constants ───────────────────────────────────────────────────────────────
-export const SEPOLIA_CHAIN_ID_DEC = 11155111;
-export const SEPOLIA_CHAIN_ID_HEX = '0xaa36a7';
+import {
+  SEPOLIA_CHAIN_ID,
+  SEPOLIA_CHAIN_ID_HEX,
+  SEPOLIA_RPC_URL,
+  SEPOLIA_EXPLORER_URL,
+} from '../config/blockchain';
+
+// Backwards compatibility re-exports
+export const SEPOLIA_CHAIN_ID_DEC = SEPOLIA_CHAIN_ID;
+export { SEPOLIA_CHAIN_ID_HEX };
 
 const WalletContext = createContext(null);
 
@@ -115,8 +122,8 @@ export function WalletProvider({ children }) {
                   symbol: 'SEP',
                   decimals: 18,
                 },
-                rpcUrls: ['https://rpc.sepolia.org'],
-                blockExplorerUrls: ['https://sepolia.etherscan.io'],
+                rpcUrls: [SEPOLIA_RPC_URL],
+                blockExplorerUrls: [SEPOLIA_EXPLORER_URL],
               },
             ],
           });
