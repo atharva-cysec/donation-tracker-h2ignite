@@ -65,7 +65,7 @@ export default function DonationDetailsPage() {
           <div>
             <div className="flex items-center gap-2 mb-2">
               <span className="text-[11px] font-bold uppercase tracking-wider text-[#2F7D5B] bg-[#EAF3EE] px-2.5 py-0.5 rounded-full">
-                Contribution Record
+                Donation Summary
               </span>
               <StatusBadge status={donation.status} />
             </div>
@@ -119,7 +119,7 @@ export default function DonationDetailsPage() {
           <div className="flex-1">
             <div className="flex items-center gap-2">
               <h3 className="text-sm font-bold text-[#1D2925]">
-                Verification
+                Independent Verification
               </h3>
               <span className="text-[10px] uppercase tracking-wider font-semibold text-[#68746F] bg-[#F4F6F4] px-2 py-0.5 rounded border border-[#E4E8E5]">
                 Smart Contract Prepared
@@ -127,11 +127,11 @@ export default function DonationDetailsPage() {
             </div>
 
             <p className="text-xs text-[#68746F] mt-1 leading-relaxed">
-              Blockchain verification will be available when this donation is connected to the TrustDonate smart contract.
+              Independent verification will be available once linked to the TrustDonate smart contract on Ethereum Sepolia.
             </p>
 
             <p className="text-[11px] text-[#9BAB9E] mt-2">
-              Future on-chain state: Verified on Sepolia Ethereum · Immutable audit trail
+              Supporting layer: Verified on-chain · Tamper-proof milestone trail
             </p>
           </div>
         </div>

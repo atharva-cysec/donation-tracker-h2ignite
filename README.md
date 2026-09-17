@@ -1,6 +1,14 @@
-# TrustDonate — Donation Transparency Platform
+# TrustDonate — Modern Giving with Milestone-Driven Transparency
 
-TrustDonate is a verified donation transparency platform built for donors who want complete confidence in their charitable contributions. Unlike traditional black-box donation portals, TrustDonate offers milestone-driven visibility into every rupee donated, linking charitable contributions directly to tangible impact stages.
+> **"TrustDonate is a donation platform that lets donors continue following their contribution after they give."**
+
+TrustDonate is a modern donation platform designed around donors and the causes they support. While traditional donation portals stop communicating once payment clears, TrustDonate keeps donors connected to their giving journey. Donors discover meaningful causes, make transparent contributions, and follow verified real-world milestones from initial receipt through project impact.
+
+### Product Hierarchy
+1. **Donate to Causes** (*The Core Product*) — Discover vetted initiatives, understand why they matter, and contribute easily.
+2. **Follow Giving Impact** (*The Human Experience*) — Clear summary of total giving, causes supported, and active initiatives.
+3. **Milestone Tracking** (*The Key Differentiator*) — Signature parcel-tracking style journey from donation receipt to funds released.
+4. **Blockchain Verification** (*The Verification Layer*) — Smart contract audit layer on Ethereum Sepolia for cryptographic certainty.
 
 ---
 

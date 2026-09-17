@@ -153,10 +153,10 @@ export default function CauseDetailsPage() {
               </div>
               <div className="relative z-10">
                 <p className="text-xs text-[#8BAA99] uppercase tracking-wider font-semibold">
-                  Fundraising Campaign
+                  Make an Impact
                 </p>
                 <p className="text-lg sm:text-xl font-bold text-white mt-0.5">
-                  Milestone-tracked disbursements for complete transparency
+                  Your contribution helps move this cause closer to its goal
                 </p>
               </div>
             </div>
@@ -171,20 +171,20 @@ export default function CauseDetailsPage() {
               {cause.fullDescription}
             </p>
             <p className="text-sm text-[#68746F] leading-relaxed">
-              Every donor receives visibility into each milestone as it is submitted, verified, and delivered by {cause.ngo}. Funds are unlocked progressively based on verified documentation.
+              When you donate, your support directly empowers {cause.ngo} to deliver tangible assistance. As progress unfolds, each milestone update keeps you connected to how funds are utilized.
             </p>
           </div>
 
-          {/* How your donation will be tracked */}
+          {/* How contributions create impact */}
           <div className="bg-white rounded-xl border border-[#E4E8E5] p-6 sm:p-8 shadow-xs">
             <div className="flex items-center gap-2 mb-2">
               <Sparkles className="w-4 h-4 text-[#2F7D5B]" />
               <h2 className="text-base font-bold text-[#1D2925]">
-                How Your Donation Will Be Tracked
+                How Contributions Create Impact
               </h2>
             </div>
             <p className="text-xs text-[#68746F] mb-6 leading-relaxed">
-              TrustDonate ensures your contributions are accounted for through verified milestone stages.
+              Follow the milestone journey planned for this campaign from funding to completion.
             </p>
 
             <div className="space-y-4">
@@ -418,10 +418,10 @@ export default function CauseDetailsPage() {
             </span>
 
             <h3 className="text-xl font-bold text-[#1D2925] mb-1">
-              Donation recorded for demo.
+              Thank you for supporting this cause.
             </h3>
             <p className="text-xs text-[#68746F] mb-6 leading-relaxed max-w-xs mx-auto">
-              Your contribution has been recorded in your local activity history. You can track milestone updates directly from your dashboard.
+              Your contribution doesn't disappear after you donate. Follow its progress and milestone updates directly through your Impact Tracker.
             </p>
 
             {/* Donation Summary Box */}
@@ -449,20 +449,27 @@ export default function CauseDetailsPage() {
             {/* Action buttons */}
             <div className="flex flex-col sm:flex-row items-center gap-3">
               <Button
+                variant="primary"
+                size="md"
+                onClick={() =>
+                  navigate('/dashboard', {
+                    state: {
+                      selectedDonationId: donationSuccess.id,
+                      scrollToTracker: true,
+                    },
+                  })
+                }
+                fullWidth
+              >
+                Track Donation
+              </Button>
+              <Button
                 variant="secondary"
                 size="md"
                 onClick={() => navigate('/my-donations')}
                 fullWidth
               >
                 View My Donations
-              </Button>
-              <Button
-                variant="primary"
-                size="md"
-                onClick={() => navigate('/dashboard')}
-                fullWidth
-              >
-                Back to Dashboard
               </Button>
             </div>
           </div>

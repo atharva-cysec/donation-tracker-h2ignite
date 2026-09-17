@@ -68,7 +68,7 @@ export default function ImpactTracker({ selectedDonation }) {
         </span>
       </div>
       <p className="text-xs text-[#68746F] mb-4">
-        Real-time visibility into each transparent funding milestone.
+        Follow your contribution from donation to progress.
       </p>
 
       {/* Main Container */}
@@ -266,7 +266,7 @@ export default function ImpactTracker({ selectedDonation }) {
 
               <div className="text-[11px] text-[#9BAB9E] flex items-center gap-1.5 sm:text-right shrink-0">
                 <Info className="w-3.5 h-3.5 text-[#9BAB9E] shrink-0" />
-                <span>Frontend demonstration stage. Contract mapping in Phase 8.</span>
+                <span>Prototype stage. Milestone updates demonstrate post-donation progress.</span>
               </div>
             </div>
           </div>

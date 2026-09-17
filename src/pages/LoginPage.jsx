@@ -31,20 +31,20 @@ function BrandPanel() {
           </span>
         </div>
         <p className="text-[#8BAA99] text-xs font-medium tracking-widest uppercase mt-1">
-          Donation Transparency Platform
+          Verified Donation Platform
         </p>
       </div>
 
       {/* Hero message */}
       <div className="relative z-10 my-auto">
         <h2 className="text-white text-3xl xl:text-4xl font-bold leading-snug mb-4">
-          Track every donation.
+          Support causes.
           <br />
-          <span className="text-[#C5D9CE]">See every milestone.</span>
+          <span className="text-[#C5D9CE]">Follow your impact.</span>
         </h2>
         <p className="text-[#8BAA99] text-base leading-relaxed max-w-xs">
-          Real-time visibility into where your money goes — from donation to
-          lasting human impact.
+          Give directly to verified initiatives and stay connected to what happens next
+          through milestone-driven tracking.
         </p>
 
         {/* Trust stats */}
@@ -57,7 +57,7 @@ function BrandPanel() {
 
       {/* Footer tagline */}
       <p className="relative z-10 text-[#8BAA99] text-xs">
-        Don't just donate. Know the impact.
+        Give. Track. Trust.
       </p>
     </div>
   );
@@ -165,7 +165,7 @@ function LoginPage() {
               Welcome back
             </h1>
             <p className="text-[#68746F] text-sm leading-relaxed">
-              Sign in to continue tracking your transparent donations.
+              Sign in to manage your giving and follow cause milestones.
             </p>
           </div>
 

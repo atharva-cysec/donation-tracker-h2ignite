@@ -35,20 +35,20 @@ function BrandPanel() {
           </span>
         </div>
         <p className="text-[#8BAA99] text-xs font-medium tracking-widest uppercase mt-1">
-          Donation Transparency Platform
+          Verified Donation Platform
         </p>
       </div>
 
       {/* Hero message */}
       <div className="relative z-10 my-auto">
         <h2 className="text-white text-3xl xl:text-4xl font-bold leading-snug mb-4">
-          Your donation,
+          Give with confidence.
           <br />
-          <span className="text-[#C5D9CE]">fully accounted for.</span>
+          <span className="text-[#C5D9CE]">Follow every milestone.</span>
         </h2>
         <p className="text-[#8BAA99] text-base leading-relaxed max-w-xs">
-          Create an account and start tracking every rupee from your contribution
-          to its verified real-world milestone.
+          Discover meaningful causes, make transparent contributions, and stay connected
+          to the real-world progress of your giving.
         </p>
 
         <div className="flex gap-6 mt-8">
@@ -59,7 +59,7 @@ function BrandPanel() {
       </div>
 
       <p className="relative z-10 text-[#8BAA99] text-xs">
-        Don't just donate. Know the impact.
+        Give. Track. Trust.
       </p>
     </div>
   );
@@ -226,7 +226,7 @@ function SignupPage() {
               Create your account
             </h1>
             <p className="text-[#68746F] text-sm leading-relaxed">
-              Start tracking your donations with full transparency.
+              Join TrustDonate to support causes and follow your giving impact.
             </p>
           </div>
 

@@ -20,29 +20,29 @@ import { validateEmail, validateRequired } from '../utils/validation';
 // ─── FAQ Dataset ──────────────────────────────────────────────────────────────
 const FAQ_ITEMS = [
   {
-    question: 'How do I track my donation?',
+    question: 'How do I make a donation?',
     answer:
-      "Click 'Check Status' or 'Track' on any donation in your Dashboard or My Donations page. This immediately focuses the interactive Impact Tracker showing each milestone stage from donation receipt to verified fund release.",
+      "Browse our Causes directory from the sidebar or dashboard, select a campaign that resonates with you, choose or enter your desired contribution amount, and confirm your donation. Your contribution will immediately appear in your personal giving history.",
   },
   {
-    question: 'Where can I see my previous donations?',
+    question: 'Where can I see my donations?',
     answer:
-      "Navigate to 'My Donations' from the sidebar menu. You can review your full contribution history, view compact giving summaries, filter by status (All, In Progress, Completed), and search by cause or partner NGO.",
+      "Navigate to 'My Donations' from the sidebar navigation. You can review your complete giving history, see active and completed contributions, search by cause or partner NGO, and access individual donation details.",
+  },
+  {
+    question: 'How do I track my donation?',
+    answer:
+      "Click 'Track' or 'Check Status' on any contribution in your Dashboard or My Donations page. This opens the signature Impact Tracker, showing how your donation progresses through milestone stages from receipt to funds release.",
+  },
+  {
+    question: 'What does "Demo progress" mean?',
+    answer:
+      "TrustDonate is currently running in hackathon prototype mode. Milestone stages reflect simulated progress to demonstrate how post-donation tracking works prior to live Sepolia smart contract deployment.",
   },
   {
     question: 'What does "Verified on blockchain" mean?',
     answer:
-      "TrustDonate uses Ethereum smart contracts as a tamper-proof transparency layer. Each donation and milestone release is logged on-chain, providing cryptographic evidence that funds were disbursed according to verified objectives.",
-  },
-  {
-    question: 'Why does a donation show "Demo progress"?',
-    answer:
-      "TrustDonate is running in hackathon demonstration mode. Milestone stages reflect simulated project progress to demonstrate how transparency works prior to live Sepolia smart contract deployment.",
-  },
-  {
-    question: 'How do I refresh donation status?',
-    answer:
-      "The Impact Tracker dynamically calculates milestone completion based on verified activity. In the future blockchain integration, refreshing queries the smart contract directly for new on-chain events.",
+      "TrustDonate uses Ethereum smart contracts as an independent verification layer. Once connected on Sepolia, milestone disbursements are recorded on-chain, providing tamper-proof evidence that funds were released according to verified objectives.",
   },
 ];
 

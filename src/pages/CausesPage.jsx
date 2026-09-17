@@ -162,7 +162,7 @@ function CauseCard({ cause, onView }) {
               onClick={() => onView(cause.id)}
               className="inline-flex items-center gap-1.5 text-xs font-bold text-[#2F7D5B] hover:text-[#27684C] transition-colors group cursor-pointer"
             >
-              <span>View Cause</span>
+              <span>Donate / View</span>
               <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
             </button>
           </div>
@@ -196,14 +196,14 @@ export default function CausesPage() {
       {/* Header Banner */}
       <div className="mb-8">
         <span className="text-xs font-semibold uppercase tracking-wider text-[#2F7D5B]">
-          Transparent Giving
+          Discover Causes
         </span>
         <h2 className="text-2xl sm:text-3xl font-bold text-[#1D2925] mt-1">
-          Explore Verified Causes
+          Explore Causes
         </h2>
         <p className="text-sm text-[#68746F] mt-1 max-w-xl leading-relaxed">
-          Support transparent, high-impact initiatives. Every rupee is tied to
-          real-world milestones that you can track step by step.
+          Find causes that matter to you and make a direct contribution. After donating,
+          you can follow real milestone progress every step of the way.
         </p>
       </div>
 

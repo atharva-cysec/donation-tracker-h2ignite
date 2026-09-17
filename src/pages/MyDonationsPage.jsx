@@ -68,7 +68,7 @@ export default function MyDonationsPage() {
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <span className="text-xs font-semibold uppercase tracking-wider text-[#2F7D5B]">
-            Contribution Records
+            Your Giving History
           </span>
           <h2 className="text-2xl sm:text-3xl font-bold text-[#1D2925] mt-1">
             My Donations

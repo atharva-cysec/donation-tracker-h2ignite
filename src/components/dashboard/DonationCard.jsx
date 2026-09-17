@@ -80,7 +80,7 @@ export function DonationActivityList({
           No donations yet
         </p>
         <p className="text-xs text-[#68746F] max-w-xs mx-auto mb-5 leading-relaxed">
-          Explore a verified cause to make your first transparent contribution.
+          Explore a cause to make your first contribution and stay connected to its progress.
         </p>
         <Link
           to="/causes"

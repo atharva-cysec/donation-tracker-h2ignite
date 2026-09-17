@@ -24,13 +24,13 @@ function WelcomeSection({ firstName }) {
     <div className="mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
       <div>
         <p className="text-xs font-semibold uppercase tracking-wider text-[#2F7D5B] mb-1">
-          Donor Portal
+          Your Giving Space
         </p>
         <h2 className="text-2xl sm:text-3xl font-bold text-[#1D2925] leading-tight">
           {getGreeting()}, {firstName} 👋
         </h2>
         <p className="text-[#68746F] text-sm mt-1 max-w-md leading-relaxed">
-          Track where your contributions go and see the verified progress they make.
+          Support causes that matter to you and stay connected to the impact of your giving.
         </p>
       </div>
 
@@ -38,7 +38,7 @@ function WelcomeSection({ firstName }) {
         variant="primary"
         size="md"
         onClick={() => navigate('/causes')}
-        aria-label="Explore verified causes"
+        aria-label="Explore causes"
         className="shrink-0 self-start sm:self-auto shadow-xs"
       >
         <Heart className="w-4 h-4" />
@@ -65,7 +65,7 @@ function UnifiedGivingOverview({ donations }) {
           <p className="text-xs text-[#68746F] mt-0.5">Summary of contributions and active milestone progress</p>
         </div>
         <span className="hidden sm:inline-block text-[11px] text-[#2F7D5B] font-semibold bg-[#EAF3EE] px-2.5 py-0.5 rounded-full border border-[#C8DFD2]">
-          100% Transparent
+          Your Giving Impact
         </span>
       </div>
 
@@ -175,7 +175,7 @@ function Dashboard() {
               Recent Donations
             </h2>
             <p className="text-xs text-[#68746F] mt-0.5">
-              Live transaction records and transparent milestones
+              Your latest contributions and milestone progress
             </p>
           </div>
           <button
