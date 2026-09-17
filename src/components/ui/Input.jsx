@@ -44,7 +44,7 @@ const Input = forwardRef(function Input(
             'w-full rounded-xl border bg-white px-4 py-3 text-sm text-slate-900',
             'placeholder:text-slate-400',
             'transition-all duration-150 outline-none',
-            'focus:ring-2 focus:ring-indigo-500 focus:ring-offset-0 focus:border-indigo-500',
+            'focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 focus:border-blue-500',
             'disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-50',
             error
               ? 'border-red-400 focus:ring-red-400 focus:border-red-400'

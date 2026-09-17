@@ -9,7 +9,7 @@ import Input from '../components/ui/Input';
 // ─── Left Panel — Brand Visual ────────────────────────────────────────────────
 function BrandPanel() {
   return (
-    <div className="relative hidden lg:flex flex-col justify-between p-10 xl:p-14 bg-gradient-to-br from-slate-900 via-indigo-950 to-indigo-900 overflow-hidden">
+    <div className="relative hidden lg:flex flex-col justify-between p-10 xl:p-14 bg-gradient-to-br from-slate-900 via-indigo-950 to-indigo-900 overflow-hidden lg:w-[45%] xl:w-[42%] shrink-0">
       {/* Decorative background orbs */}
       <div
         aria-hidden="true"
@@ -145,10 +145,8 @@ function LoginPage() {
 
   return (
     <div className="min-h-screen flex bg-slate-50">
-      {/* ── Left brand panel (desktop only) ── */}
-      <div className="lg:w-[45%] xl:w-[42%] shrink-0">
-        <BrandPanel />
-      </div>
+      {/* ── Left brand panel (desktop only) — direct flex child so it stretches full height ── */}
+      <BrandPanel />
 
       {/* ── Right form panel ── */}
       <div className="flex-1 flex flex-col justify-center px-6 py-12 sm:px-10 lg:px-16 xl:px-20">

@@ -1,154 +1,163 @@
-import { useNavigate } from 'react-router-dom';
-import {
-  ShieldCheck,
-  LogOut,
-  LayoutDashboard,
-  Clock,
-  CheckCircle2,
-} from 'lucide-react';
+import { useRef, useState } from 'react';
+import { IndianRupee, Activity, CheckCircle2, Heart } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import MainLayout from '../components/layout/MainLayout';
+import OverviewCard from '../components/dashboard/OverviewCard';
+import DonationCard from '../components/dashboard/DonationCard';
+import ImpactTracker from '../components/dashboard/ImpactTracker';
 import Button from '../components/ui/Button';
+import { MOCK_DONATIONS, MOCK_STATS } from '../data/mockDonations';
+import { formatINR } from '../components/dashboard/DonationCard';
 
-/**
- * Dashboard — Phase 1 stub.
- *
- * This is a placeholder that shows the authenticated user's name
- * and a logout button. Full dashboard content (donation cards,
- * status tracker, causes, etc.) will be built in later phases.
- */
-function Dashboard() {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
+// ─── Greeting helper ─────────────────────────────────────────────────────────
+function getGreeting() {
+  const h = new Date().getHours();
+  if (h < 12) return 'Good morning';
+  if (h < 17) return 'Good afternoon';
+  return 'Good evening';
+}
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login', { replace: true });
-  };
-
-  // Get first name for a friendlier greeting
-  const firstName = user?.name?.split(' ')[0] ?? 'there';
-
+// ─── Welcome section ──────────────────────────────────────────────────────────
+function WelcomeSection({ firstName }) {
   return (
-    <div className="min-h-screen bg-slate-50">
-      {/* ── Top Navigation Bar ── */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          {/* Logo */}
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-indigo-600 flex items-center justify-center">
-              <ShieldCheck className="w-4 h-4 text-white" strokeWidth={2.5} />
-            </div>
-            <span className="font-bold text-slate-900 text-lg tracking-tight">
-              TrustDonate
-            </span>
-          </div>
+    <div className="mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+      <div>
+        <p className="text-sm text-gray-400 font-medium mb-0.5">{getGreeting()}</p>
+        <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight">
+          {firstName}
+        </h2>
+        <p className="text-gray-500 text-sm mt-1.5 max-w-md leading-relaxed">
+          Track where your donations go and see the progress they make.
+        </p>
+      </div>
 
-          {/* Right side — user info + logout */}
-          <div className="flex items-center gap-4">
-            <div className="hidden sm:flex flex-col items-end">
-              <span className="text-sm font-semibold text-slate-800">
-                {user?.name}
-              </span>
-              <span className="text-xs text-slate-400">{user?.email}</span>
-            </div>
-
-            {/* Avatar circle */}
-            <div
-              aria-hidden="true"
-              className="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-sm select-none"
-            >
-              {user?.name?.charAt(0)?.toUpperCase() ?? '?'}
-            </div>
-
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleLogout}
-              aria-label="Log out"
-              className="text-slate-500 hover:text-red-600 hover:bg-red-50"
-            >
-              <LogOut className="w-4 h-4" />
-              <span className="hidden sm:inline">Log out</span>
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      {/* ── Main Content ── */}
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
-        {/* Greeting */}
-        <div className="mb-10">
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-1">
-            Good to see you, {firstName}! 👋
-          </h1>
-          <p className="text-slate-500 text-base">
-            Your donation dashboard is on its way.
-          </p>
-        </div>
-
-        {/* Phase placeholder card */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 sm:p-10 max-w-2xl">
-          <div className="flex items-start gap-4 mb-6">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center shrink-0">
-              <LayoutDashboard className="w-6 h-6 text-indigo-600" />
-            </div>
-            <div>
-              <h2 className="text-lg font-bold text-slate-900 mb-1">
-                Dashboard Coming Soon
-              </h2>
-              <p className="text-slate-500 text-sm leading-relaxed">
-                Phase 1 — Authentication — is complete. The full donation
-                dashboard will be built in the next phase.
-              </p>
-            </div>
-          </div>
-
-          {/* Phase checklist */}
-          <div className="space-y-3 border-t border-slate-100 pt-6">
-            <PhaseItem
-              icon={<CheckCircle2 className="w-4 h-4 text-emerald-500" />}
-              label="Phase 1 — Login & Signup"
-              done
-            />
-            <PhaseItem
-              icon={<Clock className="w-4 h-4 text-slate-300" />}
-              label="Phase 2 — Dashboard & Donation Cards"
-              done={false}
-            />
-            <PhaseItem
-              icon={<Clock className="w-4 h-4 text-slate-300" />}
-              label="Phase 3 — Donation Status Tracker"
-              done={false}
-            />
-            <PhaseItem
-              icon={<Clock className="w-4 h-4 text-slate-300" />}
-              label="Phase 4 — Blockchain Integration"
-              done={false}
-            />
-          </div>
-        </div>
-      </main>
+      <Button
+        variant="primary"
+        size="md"
+        aria-label="Explore available causes"
+        className="shrink-0 self-start sm:self-auto"
+      >
+        <Heart className="w-4 h-4" />
+        Explore Causes
+      </Button>
     </div>
   );
 }
 
-function PhaseItem({ icon, label, done }) {
+// ─── Overview stats row ───────────────────────────────────────────────────────
+function OverviewRow() {
   return (
-    <div className="flex items-center gap-3">
-      <div className="shrink-0">{icon}</div>
-      <span
-        className={`text-sm font-medium ${
-          done ? 'text-slate-800' : 'text-slate-400'
-        }`}
-      >
-        {label}
-      </span>
-      {done && (
-        <span className="ml-auto text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
-          Complete
-        </span>
-      )}
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
+      <OverviewCard
+        icon={<IndianRupee className="w-4 h-4" strokeWidth={2} />}
+        label="Total Donated"
+        value={formatINR(MOCK_STATS.totalDonated)}
+        sub="All time"
+      />
+      <OverviewCard
+        icon={<Activity className="w-4 h-4" strokeWidth={2} />}
+        label="Active Donations"
+        value={String(MOCK_STATS.activeDonations)}
+        sub="In progress"
+      />
+      <OverviewCard
+        icon={<CheckCircle2 className="w-4 h-4" strokeWidth={2} />}
+        label="Completed"
+        value={String(MOCK_STATS.completedDonations)}
+        sub="Fully delivered"
+      />
+      <OverviewCard
+        icon={<Heart className="w-4 h-4" strokeWidth={2} />}
+        label="Causes Supported"
+        value={String(MOCK_STATS.causesSupported)}
+      />
     </div>
+  );
+}
+
+// ─── Recent Donations section ─────────────────────────────────────────────────
+function RecentDonations({ donations, onCheckStatus, selectedId }) {
+  return (
+    <section aria-labelledby="recent-donations-heading" className="mb-2">
+      <div className="flex items-center justify-between mb-4">
+        <h2
+          id="recent-donations-heading"
+          className="text-base font-bold text-gray-900"
+        >
+          Recent Donations
+        </h2>
+        <button
+          className="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors focus:outline-none focus-visible:underline"
+          aria-label="View all donations"
+        >
+          View all
+        </button>
+      </div>
+
+      {donations.length === 0 ? (
+        <div className="bg-white rounded-xl border border-dashed border-gray-300 p-10 text-center">
+          <p className="text-sm text-gray-400">No donations yet.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+          {donations.map((donation) => (
+            <DonationCard
+              key={donation.id}
+              donation={donation}
+              onCheckStatus={onCheckStatus}
+              isSelected={selectedId === donation.id}
+            />
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+// ─── Dashboard page ───────────────────────────────────────────────────────────
+function Dashboard() {
+  const { user } = useAuth();
+  const trackerRef = useRef(null);
+  const firstName = user?.name?.split(' ')[0] ?? 'there';
+
+  // Selected donation drives the ImpactTracker display
+  const [selectedDonation, setSelectedDonation] = useState(null);
+
+  /**
+   * handleCheckStatus
+   * 1. Sets the selected donation in state (ImpactTracker reads it).
+   * 2. Smooth-scrolls to the tracker section.
+   *
+   * The actual tracker UI and blockchain integration will be
+   * connected in Phase 4. The scroll + selection already work now.
+   */
+  const handleCheckStatus = (donation) => {
+    setSelectedDonation(donation);
+    setTimeout(() => {
+      trackerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
+  };
+
+  return (
+    <MainLayout title="Dashboard">
+      {/* Welcome */}
+      <WelcomeSection firstName={firstName} />
+
+      {/* Donation Overview */}
+      <OverviewRow />
+
+      {/* Recent Donations */}
+      <RecentDonations
+        donations={MOCK_DONATIONS}
+        onCheckStatus={handleCheckStatus}
+        selectedId={selectedDonation?.id}
+      />
+
+      {/* Impact Tracker — Phase 3 placeholder, Phase 4 will wire real data */}
+      <div ref={trackerRef}>
+        <ImpactTracker selectedDonation={selectedDonation} />
+      </div>
+    </MainLayout>
   );
 }
 

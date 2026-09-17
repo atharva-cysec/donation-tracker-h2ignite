@@ -4,17 +4,20 @@ import ProtectedRoute from './routes/ProtectedRoute';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import Dashboard from './pages/Dashboard';
+import CausesPage from './pages/CausesPage';
+import MyDonationsPage from './pages/MyDonationsPage';
+import SettingsPage from './pages/SettingsPage';
 
 function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
         <Routes>
-          {/* Public routes */}
+          {/* ── Public routes ── */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
 
-          {/* Protected routes */}
+          {/* ── Protected routes (require auth) ── */}
           <Route
             path="/dashboard"
             element={
@@ -23,11 +26,33 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/causes"
+            element={
+              <ProtectedRoute>
+                <CausesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/my-donations"
+            element={
+              <ProtectedRoute>
+                <MyDonationsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <SettingsPage />
+              </ProtectedRoute>
+            }
+          />
 
-          {/* Default redirect */}
+          {/* ── Redirects ── */}
           <Route path="/" element={<Navigate to="/login" replace />} />
-
-          {/* Catch-all */}
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </AuthProvider>
