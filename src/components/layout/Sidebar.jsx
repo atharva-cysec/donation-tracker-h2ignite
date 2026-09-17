@@ -33,7 +33,7 @@ function NavLink({ item, onClick }) {
         'transition-colors duration-150 outline-none',
         'focus-visible:ring-2 focus-visible:ring-[#2F7D5B]',
         isActive
-          ? 'bg-[#2F7D5B] text-white'
+          ? 'bg-[#2F7D5B] text-white shadow-xs'
           : 'text-[#8BAA99] hover:bg-[#1F3D32] hover:text-[#C5D9CE]',
       ].join(' ')}
     >
@@ -48,11 +48,17 @@ function SidebarContent({ onNavClick }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
+  const handleLogout = () => {
+    if (onNavClick) onNavClick();
+    logout();
+    navigate('/login', { replace: true });
+  };
+
   return (
     <div className="flex flex-col h-full select-none bg-[#18332B]">
       {/* Logo */}
       <div className="flex items-center gap-2.5 px-5 h-14 border-b border-[#1F3D32] shrink-0">
-        <div className="w-7 h-7 rounded-lg bg-[#2F7D5B] flex items-center justify-center">
+        <div className="w-7 h-7 rounded-lg bg-[#2F7D5B] flex items-center justify-center shadow-xs">
           <ShieldCheck className="w-4 h-4 text-white" strokeWidth={2.5} />
         </div>
         <span className="font-bold text-white text-sm tracking-tight">
@@ -70,8 +76,9 @@ function SidebarContent({ onNavClick }) {
         ))}
       </nav>
 
-      {/* User + Logout */}
+      {/* User profile + Logout separated at bottom */}
       <div className="px-3 py-4 border-t border-[#1F3D32] shrink-0 space-y-1">
+        {/* User Card */}
         <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-[#122620] mb-2">
           <div
             aria-hidden="true"
@@ -80,16 +87,24 @@ function SidebarContent({ onNavClick }) {
             {user?.name?.charAt(0)?.toUpperCase() ?? '?'}
           </div>
           <div className="min-w-0">
-            <p className="text-xs font-semibold text-[#C5D9CE] truncate leading-tight">{user?.name}</p>
-            <p className="text-xs text-[#3D6353] truncate leading-tight">{user?.email}</p>
+            <p className="text-xs font-semibold text-[#C5D9CE] truncate leading-tight">
+              {user?.name || 'Guest User'}
+            </p>
+            <p className="text-xs text-[#3D6353] truncate leading-tight">
+              {user?.email || 'demo@trustdonate.test'}
+            </p>
           </div>
         </div>
+
+        {/* Proper understated Logout button */}
         <button
-          onClick={() => { logout(); navigate('/login', { replace: true }); }}
-          className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-[#8BAA99] hover:bg-[#1F3D32] hover:text-red-400 transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2F7D5B]"
+          type="button"
+          onClick={handleLogout}
+          className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-[#8BAA99] hover:bg-[#1F3D32] hover:text-[#C5D9CE] transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2F7D5B] cursor-pointer"
+          aria-label="Logout of TrustDonate"
         >
-          <LogOut className="w-4 h-4 shrink-0" strokeWidth={1.75} />
-          Log out
+          <LogOut className="w-4 h-4 shrink-0 text-[#8BAA99]" strokeWidth={1.75} />
+          <span>Logout</span>
         </button>
       </div>
     </div>
@@ -100,7 +115,7 @@ function SidebarContent({ onNavClick }) {
 function Sidebar({ mobileOpen, onClose }) {
   return (
     <>
-      {/* Desktop */}
+      {/* Desktop Persistent Sidebar */}
       <aside
         className="hidden lg:flex flex-col w-56 xl:w-60 shrink-0 bg-[#18332B] min-h-screen sticky top-0"
         aria-label="Application sidebar"
@@ -108,10 +123,10 @@ function Sidebar({ mobileOpen, onClose }) {
         <SidebarContent />
       </aside>
 
-      {/* Mobile drawer */}
+      {/* Mobile Drawer Navigation */}
       {mobileOpen && (
         <div className="fixed inset-0 z-40 lg:hidden" aria-modal="true" role="dialog" aria-label="Navigation menu">
-          <div className="absolute inset-0 bg-black/50" onClick={onClose} aria-hidden="true" />
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-xs" onClick={onClose} aria-hidden="true" />
           <div className="absolute inset-y-0 left-0 w-64 bg-[#18332B] flex flex-col shadow-2xl">
             <button
               onClick={onClose}
