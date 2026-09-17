@@ -1,8 +1,8 @@
 /**
- * mockDonations.js — Frontend mock donation data & local demo persistence.
+ * mockDonations.js — Frontend mock donation data & per-user demo persistence.
  *
  * All values are placeholder records for UI development.
- * Stored in localStorage when a user makes a demo donation.
+ * Stored in localStorage keyed by userId when a user makes a demo donation.
  *
  * currentStep:
  *   1 -> Donation Received
@@ -14,6 +14,7 @@
 export const MOCK_DONATIONS = [
   {
     id: 'donation-001',
+    userId: 'demo-user',
     amount: 2000,
     cause: 'Emergency Medical Support',
     ngo: 'Aarogya Aid Foundation',
@@ -24,6 +25,7 @@ export const MOCK_DONATIONS = [
   },
   {
     id: 'donation-002',
+    userId: 'demo-user',
     amount: 1500,
     cause: 'Digital Literacy & STEM Labs',
     ngo: 'Vidya Vikas Trust',
@@ -34,6 +36,7 @@ export const MOCK_DONATIONS = [
   },
   {
     id: 'donation-003',
+    userId: 'demo-user',
     amount: 2000,
     cause: 'Nutritious Meal Program',
     ngo: 'Annapoorna Seva Sanstha',
@@ -44,18 +47,47 @@ export const MOCK_DONATIONS = [
   },
 ];
 
-const STORAGE_KEY = 'trustdonate_donations_list';
+const LEGACY_STORAGE_KEY = 'trustdonate_donations_list';
+
+function isDemoUser(id) {
+  return id === 'demo-user' || id === 'demo-user-static-id';
+}
+
+function getActiveUserId(explicitUserId) {
+  if (explicitUserId) return explicitUserId;
+  try {
+    const saved = localStorage.getItem('trustdonate_user');
+    if (saved) {
+      const user = JSON.parse(saved);
+      return user?.id || null;
+    }
+  } catch (err) {
+    // ignore
+  }
+  return null;
+}
 
 /**
- * Retrieve current donations (from localStorage if available, or mock default).
+ * Retrieve current donations for a specific user.
+ * - For demo-user: returns seeded demo donations or stored custom donations.
+ * - For other demo users (Aarav, Riya, Kabir, Meera) or signup accounts:
+ *   returns their isolated donation history (or empty array if none yet).
  */
-export function getStoredDonations() {
+export function getStoredDonations(explicitUserId) {
+  const targetUserId = getActiveUserId(explicitUserId);
+
+  // If no user is identified, return empty array
+  if (!targetUserId) {
+    return [];
+  }
+
+  // 1. Check user-specific storage key first
+  const userStorageKey = `trustdonate_donations_${targetUserId}`;
   try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        // Ensure every item has a currentStep fallback
+    const userSaved = localStorage.getItem(userStorageKey);
+    if (userSaved) {
+      const parsed = JSON.parse(userSaved);
+      if (Array.isArray(parsed)) {
         return parsed.map((item) => ({
           ...item,
           currentStep: item.currentStep ?? (item.status === 'Completed' ? 4 : 2),
@@ -63,26 +95,59 @@ export function getStoredDonations() {
       }
     }
   } catch (err) {
-    console.warn('Could not read stored donations', err);
+    console.warn(`Could not read stored donations for ${targetUserId}`, err);
   }
-  return MOCK_DONATIONS;
+
+  // 2. If this is Demo User, check legacy key or return MOCK_DONATIONS
+  if (isDemoUser(targetUserId)) {
+    try {
+      const legacySaved = localStorage.getItem(LEGACY_STORAGE_KEY);
+      if (legacySaved) {
+        const parsed = JSON.parse(legacySaved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.map((item) => ({
+            ...item,
+            currentStep: item.currentStep ?? (item.status === 'Completed' ? 4 : 2),
+          }));
+        }
+      }
+    } catch (err) {
+      console.warn('Could not read legacy stored donations', err);
+    }
+    return MOCK_DONATIONS;
+  }
+
+  // 3. For any other user (Aarav, Riya, Kabir, Meera, or Signup user),
+  // new accounts start with no donations yet.
+  return [];
 }
 
 /**
- * Retrieve single donation by ID
+ * Retrieve single donation by ID, scoped to user if available.
  */
-export function getDonationById(id) {
-  const all = getStoredDonations();
-  return all.find((d) => d.id === id) || null;
+export function getDonationById(id, explicitUserId) {
+  const targetUserId = getActiveUserId(explicitUserId);
+  if (targetUserId) {
+    const userDonations = getStoredDonations(targetUserId);
+    const found = userDonations.find((d) => d.id === id);
+    if (found) return found;
+  }
+
+  // Fallback check for demo-user seeded donations if viewing direct link
+  const demoDonations = getStoredDonations('demo-user');
+  return demoDonations.find((d) => d.id === id) || null;
 }
 
 /**
- * Add a simulated demo donation to localStorage.
+ * Add a simulated demo donation to localStorage for the target user.
  */
-export function addDemoDonation({ cause, ngo, amount }) {
-  const current = getStoredDonations();
+export function addDemoDonation({ cause, ngo, amount, userId }) {
+  const targetUserId = getActiveUserId(userId) || 'demo-user';
+  const current = getStoredDonations(targetUserId);
+  const randomSuffix = Math.random().toString(36).substring(2, 6);
   const newRecord = {
-    id: `donation-${Date.now().toString().slice(-4)}`,
+    id: `donation-${Date.now().toString().slice(-4)}-${randomSuffix}`,
+    userId: targetUserId,
     amount: Number(amount),
     cause,
     ngo,
@@ -94,7 +159,10 @@ export function addDemoDonation({ cause, ngo, amount }) {
 
   const updated = [newRecord, ...current];
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    localStorage.setItem(`trustdonate_donations_${targetUserId}`, JSON.stringify(updated));
+    if (isDemoUser(targetUserId)) {
+      localStorage.setItem(LEGACY_STORAGE_KEY, JSON.stringify(updated));
+    }
   } catch (err) {
     console.warn('Could not persist demo donation', err);
   }

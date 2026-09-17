@@ -17,12 +17,14 @@ import Button from '../components/ui/Button';
 import { MOCK_CAUSES } from '../data/mockCauses';
 import { formatINR } from '../components/dashboard/DonationCard';
 import { addDemoDonation } from '../data/mockDonations';
+import { useAuth } from '../context/AuthContext';
 
 const PRESET_AMOUNTS = [500, 1000, 2000, 5000];
 
 export default function CauseDetailsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const cause = MOCK_CAUSES.find((c) => c.id === id);
 
@@ -81,6 +83,7 @@ export default function CauseDetailsPage() {
       cause: cause.title,
       ngo: cause.ngo,
       amount: effectiveAmount,
+      userId: user?.id,
     });
 
     setIsSubmitting(false);

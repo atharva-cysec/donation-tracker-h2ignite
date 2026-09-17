@@ -4,13 +4,15 @@ import MainLayout from '../components/layout/MainLayout';
 import ImpactTracker from '../components/dashboard/ImpactTracker';
 import { formatINR, StatusBadge } from '../components/dashboard/DonationCard';
 import { getDonationById } from '../data/mockDonations';
+import { useAuth } from '../context/AuthContext';
 import Button from '../components/ui/Button';
 
 export default function DonationDetailsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
-  const donation = getDonationById(id);
+  const donation = getDonationById(id, user?.id);
 
   if (!donation) {
     return (

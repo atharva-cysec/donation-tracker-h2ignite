@@ -57,7 +57,7 @@ const ISSUE_TYPES = [
 export default function SupportPage() {
   const { user } = useAuth();
   const location = useLocation();
-  const donations = useMemo(() => getStoredDonations(), []);
+  const donations = useMemo(() => getStoredDonations(user?.id), [user?.id]);
 
   // Accordion state for FAQ
   const [openFaqIndex, setOpenFaqIndex] = useState(0);

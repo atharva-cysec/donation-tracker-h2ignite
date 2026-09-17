@@ -1,18 +1,10 @@
 import { createContext, useContext, useCallback } from 'react';
 import useLocalStorage from '../hooks/useLocalStorage';
+import { demoUsers, isDemoEmail, findDemoUser } from '../data/demoUsers';
 
 // ─── Storage Keys ─────────────────────────────────────────────────────────────
 const STORAGE_KEY = 'trustdonate_user';
 const ACCOUNTS_KEY = 'trustdonate_accounts';
-
-// ─── DEMO-ONLY authentication — remove before production. ─────────────────────
-const DEMO_ACCOUNT = {
-  id: 'demo-user-static-id',
-  name: 'Demo User',
-  email: 'demo@trustdonate.test',
-  password: 'Demo@123',
-  createdAt: '2026-09-17T00:00:00.000Z',
-};
 
 // ─── Context ──────────────────────────────────────────────────────────────────
 const AuthContext = createContext(null);
@@ -39,11 +31,11 @@ export function AuthProvider({ children }) {
     (name, email, password) => {
       const normalizedEmail = email.trim().toLowerCase();
 
-      // Prevent using the reserved demo email
-      if (normalizedEmail === DEMO_ACCOUNT.email.toLowerCase()) {
+      // Prevent using any reserved demo email
+      if (isDemoEmail(normalizedEmail)) {
         return {
           success: false,
-          error: 'This email is reserved for the platform demo account.',
+          error: 'This email is reserved for platform demo accounts.',
         };
       }
 
@@ -82,24 +74,22 @@ export function AuthProvider({ children }) {
   );
 
   /**
-   * Login — validates credentials against demo account and stored accounts.
+   * Login — validates credentials against demo accounts and stored accounts.
    * Returns { success, error }.
    */
   const login = useCallback(
     (email, password) => {
       const normalizedEmail = email.trim().toLowerCase();
 
-      // DEMO-ONLY authentication — remove before production.
+      // HACKATHON DEMO ACCOUNTS ONLY
       // Allows hardcoded evaluation login even if localStorage was cleared.
-      if (
-        normalizedEmail === DEMO_ACCOUNT.email.toLowerCase() &&
-        password === DEMO_ACCOUNT.password
-      ) {
+      const demoAccount = findDemoUser(normalizedEmail, password);
+      if (demoAccount) {
         setUser({
-          id: DEMO_ACCOUNT.id,
-          name: DEMO_ACCOUNT.name,
-          email: DEMO_ACCOUNT.email,
-          createdAt: DEMO_ACCOUNT.createdAt,
+          id: demoAccount.id,
+          name: demoAccount.name,
+          email: demoAccount.email,
+          createdAt: demoAccount.createdAt,
         });
         return { success: true, error: null };
       }

@@ -4,13 +4,15 @@ import { Heart, Search, Filter } from 'lucide-react';
 import MainLayout from '../components/layout/MainLayout';
 import { DonationActivityList, formatINR } from '../components/dashboard/DonationCard';
 import { getStoredDonations } from '../data/mockDonations';
+import { useAuth } from '../context/AuthContext';
 import Button from '../components/ui/Button';
 
 const STATUS_FILTERS = ['All', 'In Progress', 'Completed'];
 
 export default function MyDonationsPage() {
   const navigate = useNavigate();
-  const allDonations = getStoredDonations();
+  const { user } = useAuth();
+  const allDonations = useMemo(() => getStoredDonations(user?.id), [user?.id]);
 
   const [selectedStatus, setSelectedStatus] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');

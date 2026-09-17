@@ -123,10 +123,15 @@ function Dashboard() {
   const trackerRef = useRef(null);
   const firstName = user?.name?.split(' ')[0] ?? 'there';
 
-  const donations = useMemo(() => getStoredDonations(), []);
+  const donations = useMemo(() => getStoredDonations(user?.id), [user?.id]);
 
   // Active donation selected for the Impact Tracker
   const [selectedDonation, setSelectedDonation] = useState(null);
+
+  // Reset selected donation if active user changes
+  useEffect(() => {
+    setSelectedDonation(null);
+  }, [user?.id]);
 
   // Handle cross-page navigation state from My Donations or Cause Details safely
   useEffect(() => {
