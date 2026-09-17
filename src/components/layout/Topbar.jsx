@@ -1,5 +1,6 @@
 import { Bell, Menu } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import WalletButton from '../wallet/WalletButton';
 
 function Topbar({ title = 'Dashboard', onMenuClick }) {
   const { user } = useAuth();
@@ -27,7 +28,10 @@ function Topbar({ title = 'Dashboard', onMenuClick }) {
         </div>
 
         {/* Right */}
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
+          {/* Connect Wallet / Sepolia status */}
+          <WalletButton />
+
           <button
             aria-label="Notifications"
             className="relative p-1.5 rounded-lg text-[#68746F] hover:text-[#1D2925] hover:bg-[#F4F6F4] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2F7D5B] transition-colors"
