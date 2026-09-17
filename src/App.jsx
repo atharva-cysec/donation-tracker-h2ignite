@@ -5,7 +5,9 @@ import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import Dashboard from './pages/Dashboard';
 import CausesPage from './pages/CausesPage';
+import CauseDetailsPage from './pages/CauseDetailsPage';
 import MyDonationsPage from './pages/MyDonationsPage';
+import DonationDetailsPage from './pages/DonationDetailsPage';
 import SettingsPage from './pages/SettingsPage';
 
 function App() {
@@ -35,10 +37,26 @@ function App() {
             }
           />
           <Route
+            path="/causes/:id"
+            element={
+              <ProtectedRoute>
+                <CauseDetailsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/my-donations"
             element={
               <ProtectedRoute>
                 <MyDonationsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/my-donations/:id"
+            element={
+              <ProtectedRoute>
+                <DonationDetailsPage />
               </ProtectedRoute>
             }
           />

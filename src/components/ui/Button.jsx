@@ -2,21 +2,21 @@ import { forwardRef } from 'react';
 
 /**
  * Button — reusable accessible button.
- *
- * Variants:
- *   primary   — blue-600 fill (main CTA)
- *   secondary — white with border
- *   ghost     — transparent, for low-emphasis actions
- *
- * Sizes: sm | md | lg
+ * Primary accent: #2F7D5B (TrustDonate forest green).
  */
 const variants = {
   primary:
-    'bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 focus-visible:ring-blue-500 disabled:bg-blue-300 shadow-sm',
+    'bg-[#2F7D5B] text-white hover:bg-[#27684C] active:bg-[#1F5239] shadow-sm ' +
+    'focus-visible:ring-[#2F7D5B] disabled:opacity-50',
   secondary:
-    'bg-white text-blue-600 border border-gray-200 hover:bg-gray-50 active:bg-gray-100 focus-visible:ring-blue-400 disabled:opacity-50 shadow-sm',
+    'bg-white text-[#2F7D5B] border border-[#E4E8E5] hover:bg-[#EAF3EE] ' +
+    'focus-visible:ring-[#2F7D5B] disabled:opacity-50 shadow-sm',
   ghost:
-    'bg-transparent text-gray-500 hover:bg-gray-100 active:bg-gray-200 focus-visible:ring-gray-400 disabled:opacity-50',
+    'bg-transparent text-[#68746F] hover:bg-[#F4F6F4] active:bg-[#E4E8E5] ' +
+    'focus-visible:ring-[#2F7D5B] disabled:opacity-50',
+  danger:
+    'bg-red-600 text-white hover:bg-red-700 shadow-sm ' +
+    'focus-visible:ring-red-500 disabled:opacity-50',
 };
 
 const sizes = {
@@ -55,13 +55,11 @@ const Button = forwardRef(function Button(
         'transition-all duration-150 cursor-pointer select-none',
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1',
         'disabled:cursor-not-allowed',
-        variants[variant],
-        sizes[size],
+        variants[variant] ?? variants.primary,
+        sizes[size] ?? sizes.md,
         fullWidth ? 'w-full' : '',
         className,
-      ]
-        .filter(Boolean)
-        .join(' ')}
+      ].filter(Boolean).join(' ')}
       {...rest}
     >
       {loading && (

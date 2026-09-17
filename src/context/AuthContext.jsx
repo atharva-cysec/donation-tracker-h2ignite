@@ -1,9 +1,18 @@
 import { createContext, useContext, useCallback } from 'react';
 import useLocalStorage from '../hooks/useLocalStorage';
 
-// ─── Storage Key ──────────────────────────────────────────────────────────────
+// ─── Storage Keys ─────────────────────────────────────────────────────────────
 const STORAGE_KEY = 'trustdonate_user';
 const ACCOUNTS_KEY = 'trustdonate_accounts';
+
+// ─── DEMO-ONLY authentication — remove before production. ─────────────────────
+const DEMO_ACCOUNT = {
+  id: 'demo-user-static-id',
+  name: 'Demo User',
+  email: 'demo@trustdonate.test',
+  password: 'Demo@123',
+  createdAt: '2026-09-17T00:00:00.000Z',
+};
 
 // ─── Context ──────────────────────────────────────────────────────────────────
 const AuthContext = createContext(null);
@@ -30,7 +39,15 @@ export function AuthProvider({ children }) {
     (name, email, password) => {
       const normalizedEmail = email.trim().toLowerCase();
 
-      // Check if account already exists
+      // Prevent using the reserved demo email
+      if (normalizedEmail === DEMO_ACCOUNT.email.toLowerCase()) {
+        return {
+          success: false,
+          error: 'This email is reserved for the platform demo account.',
+        };
+      }
+
+      // Check if account already exists in registered accounts
       const exists = accounts.some(
         (acc) => acc.email.toLowerCase() === normalizedEmail
       );
@@ -45,7 +62,6 @@ export function AuthProvider({ children }) {
         id: crypto.randomUUID(),
         name: name.trim(),
         email: normalizedEmail,
-        // In production this would be hashed. Frontend demo only.
         password,
         createdAt: new Date().toISOString(),
       };
@@ -66,13 +82,29 @@ export function AuthProvider({ children }) {
   );
 
   /**
-   * Login — validates credentials against stored accounts.
+   * Login — validates credentials against demo account and stored accounts.
    * Returns { success, error }.
    */
   const login = useCallback(
     (email, password) => {
       const normalizedEmail = email.trim().toLowerCase();
 
+      // DEMO-ONLY authentication — remove before production.
+      // Allows hardcoded evaluation login even if localStorage was cleared.
+      if (
+        normalizedEmail === DEMO_ACCOUNT.email.toLowerCase() &&
+        password === DEMO_ACCOUNT.password
+      ) {
+        setUser({
+          id: DEMO_ACCOUNT.id,
+          name: DEMO_ACCOUNT.name,
+          email: DEMO_ACCOUNT.email,
+          createdAt: DEMO_ACCOUNT.createdAt,
+        });
+        return { success: true, error: null };
+      }
+
+      // Check registered accounts created through Signup
       const account = accounts.find(
         (acc) =>
           acc.email.toLowerCase() === normalizedEmail &&

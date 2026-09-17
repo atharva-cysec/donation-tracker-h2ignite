@@ -1,193 +1,289 @@
-import { ScanLine, CheckCircle2, Circle } from 'lucide-react';
-import { formatINR } from './DonationCard';
+import { ScanLine, CheckCircle2, Circle, Clock, Info } from 'lucide-react';
+import { formatINR, StatusBadge } from './DonationCard';
 
 /**
- * TRACKER_STEPS — placeholder milestone steps.
- *
- * These are UI scaffolding only.
- * Phase 4 will replace this array with real milestone data
- * from the DonationTracker smart contract events.
- *
- * Do NOT claim these steps reflect actual on-chain events.
+ * TRACKER_STAGES — Parcel-tracking style milestone stages.
+ * Aligned with smart contract lifecycle:
+ * 1. Donation Received
+ * 2. Milestone Added
+ * 3. Funds Requested
+ * 4. Funds Released
  */
-const TRACKER_STEPS = [
-  { id: 1, label: 'Donation Received',    description: 'Your donation was recorded.' },
-  { id: 2, label: 'Milestone Added',       description: 'The NGO created a milestone.' },
-  { id: 3, label: 'Milestone Requested',   description: 'Funds have been requested.' },
-  { id: 4, label: 'Funds Released',        description: 'Funds transferred to the NGO.' },
+const TRACKER_STAGES = [
+  {
+    id: 1,
+    title: 'Donation Received',
+    description: 'Your donation has been recorded.',
+    updateTemplate: (ngo) => 'Donation received and registered for verified milestone allocation.',
+  },
+  {
+    id: 2,
+    title: 'Milestone Added',
+    description: 'The organization added the next funding milestone.',
+    updateTemplate: (ngo) => `Milestone documentation and budget submitted by ${ngo}.`,
+  },
+  {
+    id: 3,
+    title: 'Funds Requested',
+    description: 'The organization requested funds for this milestone.',
+    updateTemplate: (ngo) => `Disbursement requested by ${ngo} backed by verified deliverables.`,
+  },
+  {
+    id: 4,
+    title: 'Funds Released',
+    description: 'Funds will be released after milestone approval.',
+    updateTemplate: (ngo) => `Funds released to ${ngo}. Milestone impact achieved.`,
+  },
 ];
 
-/**
- * Get how many steps to show as "done" based on mock status.
- * In Phase 4 this will be driven by real contract event data.
- */
-function getCompletedSteps(status) {
-  if (status === 'completed')    return 4;
-  if (status === 'in-progress')  return 2;
-  return 0;
-}
-
-// ─── Step row ─────────────────────────────────────────────────────────────────
-function Step({ step, done, isLast }) {
-  return (
-    <div className="flex gap-4">
-      {/* Indicator column */}
-      <div className="flex flex-col items-center">
-        <div
-          className={[
-            'w-7 h-7 rounded-full flex items-center justify-center border-2 shrink-0 transition-colors',
-            done
-              ? 'bg-blue-600 border-blue-600'
-              : 'bg-white border-gray-300',
-          ].join(' ')}
-          aria-hidden="true"
-        >
-          {done ? (
-            <CheckCircle2 className="w-4 h-4 text-white" strokeWidth={2.5} />
-          ) : (
-            <Circle className="w-3 h-3 text-gray-300" />
-          )}
-        </div>
-        {!isLast && (
-          <div
-            className={`w-px flex-1 mt-1 mb-1 ${done ? 'bg-blue-300' : 'bg-gray-200'}`}
-            aria-hidden="true"
-          />
-        )}
-      </div>
-
-      {/* Content column */}
-      <div className={`pb-6 ${isLast ? 'pb-0' : ''}`}>
-        <p
-          className={`text-sm font-semibold leading-tight ${
-            done ? 'text-gray-900' : 'text-gray-400'
-          }`}
-        >
-          {step.label}
-        </p>
-        <p className={`text-xs mt-0.5 ${done ? 'text-gray-500' : 'text-gray-300'}`}>
-          {step.description}
-        </p>
-      </div>
-    </div>
-  );
-}
-
-// ─── ImpactTracker ────────────────────────────────────────────────────────────
-/**
- * ImpactTracker — Donation Impact Tracker section.
- *
- * Phase 3: UI scaffolding with placeholder milestone steps.
- * Phase 4: Replace TRACKER_STEPS with real DonationTracker contract events.
- *
- * Props:
- *   selectedDonation — donation object | null
- */
-function ImpactTracker({ selectedDonation }) {
-  const completedSteps = selectedDonation
-    ? getCompletedSteps(selectedDonation.status)
+export default function ImpactTracker({ selectedDonation }) {
+  // Determine effective current step (1 to 4)
+  const currentStep = selectedDonation
+    ? (selectedDonation.status === 'Completed' || selectedDonation.status === 'completed')
+      ? 4
+      : (selectedDonation.currentStep || 2)
     : 0;
+
+  const currentStageObj = TRACKER_STAGES.find((s) => s.id === currentStep) || TRACKER_STAGES[0];
+  const currentUpdateText = selectedDonation
+    ? currentStageObj.updateTemplate(selectedDonation.ngo)
+    : '';
 
   return (
     <section
       id="donation-tracker"
       aria-label="Donation Impact Tracker"
-      className="mt-8 sm:mt-10"
+      className="mt-10"
     >
-      {/* Section header */}
-      <div className="flex items-center gap-2 mb-1">
-        <ScanLine className="w-4 h-4 text-blue-600" />
-        <h2 className="text-base font-bold text-gray-900">
-          Donation Impact Tracker
-        </h2>
+      {/* Section Header */}
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
+          <ScanLine className="w-4 h-4 text-[#2F7D5B]" />
+          <h2 className="text-base font-bold text-[#1D2925]">
+            Donation Impact Tracker
+          </h2>
+        </div>
+        <span className="text-[11px] font-semibold text-[#2F7D5B] bg-[#EAF3EE] border border-[#C8DFD2] px-2.5 py-0.5 rounded-full">
+          Demo Progress
+        </span>
       </div>
-      <p className="text-sm text-gray-500 mb-5">
-        See the progress of your selected donation.
+      <p className="text-xs text-[#68746F] mb-4">
+        Real-time visibility into each transparent funding milestone.
       </p>
 
-      {/* Card */}
-      <div className="bg-white rounded-xl border border-gray-200">
+      {/* Main Container */}
+      <div className="bg-white rounded-xl border border-[#E4E8E5] shadow-xs overflow-hidden">
         {selectedDonation ? (
-          <>
-            {/* Selected donation header */}
-            <div className="px-6 py-5 border-b border-gray-100">
-              <div className="flex items-start justify-between gap-4">
+          <div>
+            {/* ─── 1. Tracker Header ─── */}
+            <div className="p-5 sm:p-6 border-b border-[#E4E8E5] bg-[#FAFAF7]">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <p className="text-xs uppercase tracking-widest text-gray-400 font-semibold mb-1">
-                    Tracking
-                  </p>
-                  <p className="text-lg font-bold text-gray-900">
-                    {formatINR(selectedDonation.amount)}
-                    <span className="text-gray-500 font-medium text-base ml-2">
-                      · {selectedDonation.cause}
-                    </span>
-                  </p>
-                  <p className="text-sm text-gray-500 mt-0.5">
-                    {selectedDonation.ngo} · {selectedDonation.date}
-                  </p>
-                </div>
-
-                {/* Progress fraction */}
-                <div className="text-right shrink-0">
-                  <p className="text-2xl font-bold text-blue-600">
-                    {completedSteps}
-                    <span className="text-sm text-gray-400 font-medium">
-                      /{TRACKER_STEPS.length}
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#2F7D5B]">
+                    Donation Impact
                   </span>
+                  <h3 className="text-xl sm:text-2xl font-bold text-[#1D2925] mt-0.5">
+                    {formatINR(selectedDonation.amount)}{' '}
+                    <span className="text-base font-medium text-[#68746F]">
+                      donated to {selectedDonation.cause}
+                    </span>
+                  </h3>
+                  <p className="text-xs text-[#68746F] mt-1">
+                    Partner NGO:{' '}
+                    <strong className="text-[#1D2925] font-semibold">
+                      {selectedDonation.ngo}
+                    </strong>{' '}
+                    · Contributed on {selectedDonation.date}
                   </p>
-                  <p className="text-xs text-gray-400">milestones</p>
+                </div>
+
+                <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 shrink-0">
+                  <div className="flex items-center gap-1.5 text-xs text-[#68746F]">
+                    <span>Current Status:</span>
+                    <StatusBadge status={selectedDonation.status} />
+                  </div>
+                  <span className="text-xs font-semibold text-[#2F7D5B]">
+                    Step {currentStep} of {TRACKER_STAGES.length}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* ─── 2. Parcel-Tracking Style Timeline ─── */}
+            <div className="p-5 sm:p-8">
+              {/* Desktop Horizontal Timeline (>= md) */}
+              <div className="hidden md:block">
+                <div className="relative flex items-start justify-between">
+                  {TRACKER_STAGES.map((stage, idx) => {
+                    const isCompleted = (selectedDonation.status === 'Completed' || selectedDonation.status === 'completed')
+                      ? true
+                      : stage.id < currentStep;
+                    const isCurrent = !isCompleted && stage.id === currentStep;
+                    const isUpcoming = stage.id > currentStep;
+                    const isLast = idx === TRACKER_STAGES.length - 1;
+
+                    return (
+                      <div key={stage.id} className="flex-1 relative">
+                        {/* Connecting horizontal line */}
+                        {!isLast && (
+                          <div
+                            className="absolute top-4 left-8 right-0 h-0.5 -z-0"
+                            style={{
+                              backgroundColor: (selectedDonation.status === 'Completed' || stage.id < currentStep)
+                                ? '#2F7D5B'
+                                : '#E4E8E5',
+                            }}
+                            aria-hidden="true"
+                          />
+                        )}
+
+                        <div className="relative z-10 flex flex-col items-start pr-4">
+                          {/* Circle Icon Badge */}
+                          <div
+                            className={`w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all duration-200 ${
+                              isCompleted
+                                ? 'bg-[#2F7D5B] border-[#2F7D5B] text-white shadow-xs'
+                                : isCurrent
+                                ? 'bg-[#EAF3EE] border-[#2F7D5B] text-[#2F7D5B] ring-4 ring-[#EAF3EE]'
+                                : 'bg-white border-[#E4E8E5] text-[#9BAB9E]'
+                            }`}
+                            aria-label={`Step ${stage.id}: ${stage.title}`}
+                          >
+                            {isCompleted ? (
+                              <CheckCircle2 className="w-4 h-4 text-white" strokeWidth={2.5} />
+                            ) : isCurrent ? (
+                              <span className="w-2.5 h-2.5 rounded-full bg-[#2F7D5B]" />
+                            ) : (
+                              <Circle className="w-2.5 h-2.5 text-[#E4E8E5]" />
+                            )}
+                          </div>
+
+                          {/* Stage Name */}
+                          <p
+                            className={`text-xs font-bold mt-3 leading-snug ${
+                              isCompleted || isCurrent ? 'text-[#1D2925]' : 'text-[#9BAB9E]'
+                            }`}
+                          >
+                            {stage.title}
+                          </p>
+
+                          {/* Short Description */}
+                          <p
+                            className={`text-[11px] mt-1 leading-relaxed ${
+                              isCompleted || isCurrent ? 'text-[#68746F]' : 'text-[#9BAB9E]'
+                            }`}
+                          >
+                            {stage.description}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
-              {/* Progress bar */}
-              <div className="mt-4 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-blue-600 rounded-full transition-all duration-500"
-                  style={{ width: `${(completedSteps / TRACKER_STEPS.length) * 100}%` }}
-                  aria-valuenow={completedSteps}
-                  aria-valuemax={TRACKER_STEPS.length}
-                  role="progressbar"
-                  aria-label="Milestone progress"
-                />
+              {/* Mobile Vertical Timeline (< md) */}
+              <div className="md:hidden space-y-0">
+                {TRACKER_STAGES.map((stage, idx) => {
+                  const isCompleted = (selectedDonation.status === 'Completed' || selectedDonation.status === 'completed')
+                    ? true
+                    : stage.id < currentStep;
+                  const isCurrent = !isCompleted && stage.id === currentStep;
+                  const isUpcoming = stage.id > currentStep;
+                  const isLast = idx === TRACKER_STAGES.length - 1;
+
+                  return (
+                    <div key={stage.id} className="flex gap-4">
+                      {/* Vertical Indicator Column */}
+                      <div className="flex flex-col items-center">
+                        <div
+                          className={`w-7 h-7 rounded-full flex items-center justify-center border-2 shrink-0 ${
+                            isCompleted
+                              ? 'bg-[#2F7D5B] border-[#2F7D5B] text-white'
+                              : isCurrent
+                              ? 'bg-[#EAF3EE] border-[#2F7D5B] text-[#2F7D5B] ring-2 ring-[#EAF3EE]'
+                              : 'bg-white border-[#E4E8E5] text-[#9BAB9E]'
+                          }`}
+                        >
+                          {isCompleted ? (
+                            <CheckCircle2 className="w-4 h-4 text-white" strokeWidth={2.5} />
+                          ) : isCurrent ? (
+                            <span className="w-2 h-2 rounded-full bg-[#2F7D5B]" />
+                          ) : (
+                            <Circle className="w-2 h-2 text-[#E4E8E5]" />
+                          )}
+                        </div>
+
+                        {!isLast && (
+                          <div
+                            className="w-0.5 flex-1 my-1"
+                            style={{
+                              backgroundColor: (selectedDonation.status === 'Completed' || stage.id < currentStep)
+                                ? '#2F7D5B'
+                                : '#E4E8E5',
+                            }}
+                            aria-hidden="true"
+                          />
+                        )}
+                      </div>
+
+                      {/* Content Column */}
+                      <div className={`pb-6 ${isLast ? 'pb-0' : ''}`}>
+                        <p
+                          className={`text-xs font-bold leading-tight ${
+                            isCompleted || isCurrent ? 'text-[#1D2925]' : 'text-[#9BAB9E]'
+                          }`}
+                        >
+                          {stage.title}
+                        </p>
+                        <p
+                          className={`text-[11px] mt-1 leading-relaxed ${
+                            isCompleted || isCurrent ? 'text-[#68746F]' : 'text-[#9BAB9E]'
+                          }`}
+                        >
+                          {stage.description}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
-            {/* Steps */}
-            <div className="px-6 py-5">
-              {TRACKER_STEPS.map((step, i) => (
-                <Step
-                  key={step.id}
-                  step={step}
-                  done={i < completedSteps}
-                  isLast={i === TRACKER_STEPS.length - 1}
-                />
-              ))}
-            </div>
+            {/* ─── 3. Current Status Panel & Disclaimer ─── */}
+            <div className="border-t border-[#E4E8E5] bg-[#FAFAF7] p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-start gap-2.5">
+                <Clock className="w-4 h-4 text-[#2F7D5B] shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-xs font-bold text-[#1D2925]">
+                    Current Update
+                  </p>
+                  <p className="text-xs text-[#68746F] mt-0.5 leading-relaxed">
+                    {currentUpdateText}
+                  </p>
+                </div>
+              </div>
 
-            {/* Phase 4 notice */}
-            <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 rounded-b-xl">
-              <p className="text-xs text-gray-400 leading-relaxed">
-                Milestone data shown is a UI placeholder. Real on-chain
-                milestone verification will be added in Phase 4.
-              </p>
+              <div className="text-[11px] text-[#9BAB9E] flex items-center gap-1.5 sm:text-right shrink-0">
+                <Info className="w-3.5 h-3.5 text-[#9BAB9E] shrink-0" />
+                <span>Frontend demonstration stage. Contract mapping in Phase 8.</span>
+              </div>
             </div>
-          </>
+          </div>
         ) : (
-          /* Empty state */
-          <div className="px-6 py-14 text-center">
+          /* Empty State */
+          <div className="p-8 sm:p-14 text-center">
             <div
-              className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center mx-auto mb-4"
+              className="w-11 h-11 rounded-xl bg-[#EAF3EE] flex items-center justify-center mx-auto mb-3 text-[#2F7D5B]"
               aria-hidden="true"
             >
-              <ScanLine className="w-5 h-5 text-gray-400" />
+              <ScanLine className="w-5 h-5" />
             </div>
-            <p className="text-sm font-semibold text-gray-600 mb-1">
-              No donation selected
+            <p className="text-sm font-semibold text-[#1D2925] mb-1">
+              Select a donation above to track its progress
             </p>
-            <p className="text-sm text-gray-400 max-w-xs mx-auto leading-relaxed">
-              Click{' '}
-              <span className="text-blue-600 font-semibold">Check Status</span>{' '}
-              on any donation above to track its progress here.
+            <p className="text-xs text-[#68746F] max-w-sm mx-auto leading-relaxed">
+              Click <strong className="text-[#2F7D5B]">Check Status →</strong> on any contribution in your activity history above to view its live stage and milestone progress.
             </p>
           </div>
         )}
@@ -195,5 +291,3 @@ function ImpactTracker({ selectedDonation }) {
     </section>
   );
 }
-
-export default ImpactTracker;
