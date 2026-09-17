@@ -325,3 +325,128 @@ export async function fetchContractOverview() {
     };
   }
 }
+
+/**
+ * Fetch all milestones recorded on-chain.
+ * @returns {Promise<Array<{index: number, description: string, amountWei: string, amountEth: string, statusCode: number, status: string}>>}
+ */
+export async function fetchAllMilestones() {
+  try {
+    const contract = getReadOnlyContract();
+    const count = await contract.milestoneCount();
+    const countNum = Number(count);
+    if (countNum === 0) {
+      return [];
+    }
+    const promises = [];
+    for (let i = 0; i < countNum; i++) {
+      promises.push(fetchMilestone(i));
+    }
+    return await Promise.all(promises);
+  } catch (error) {
+    console.error('Error fetching all milestones from chain:', error);
+    throw error;
+  }
+}
+
+/**
+ * Fetch current contract balance on Sepolia.
+ * @returns {Promise<{balanceWei: string, balanceEth: string}>}
+ */
+export async function fetchContractBalance() {
+  try {
+    const provider = getReadOnlyProvider();
+    const balance = await provider.getBalance(CONTRACT_ADDRESS);
+    return {
+      balanceWei: balance.toString(),
+      balanceEth: ethers.formatEther(balance),
+    };
+  } catch (error) {
+    console.error('Error fetching contract balance:', error);
+    return {
+      balanceWei: '0',
+      balanceEth: '0',
+    };
+  }
+}
+
+/**
+ * Fetch complete milestone and contract state for the Impact Tracker.
+ * Computes the active lifecycle step (1 to 4) based on on-chain milestone statuses.
+ *
+ * @returns {Promise<{
+ *   success: boolean,
+ *   contractAddress: string,
+ *   donationCount: number,
+ *   milestoneCount: number,
+ *   ngoWallet: string,
+ *   balanceEth: string,
+ *   milestones: Array<any>,
+ *   currentStep: number,
+ *   stepStatusText: string
+ * }>}
+ */
+export async function fetchContractMilestoneState() {
+  try {
+    const [overview, milestones, balance] = await Promise.all([
+      fetchContractOverview(),
+      fetchAllMilestones(),
+      fetchContractBalance(),
+    ]);
+
+    // Compute active step (1 to 4):
+    // Step 1: Donation Received (confirmed on Sepolia)
+    // Step 2: Milestone Added (if milestones.length > 0)
+    // Step 3: Funds Requested (if any milestone has statusCode >= 1)
+    // Step 4: Funds Released (if any milestone has statusCode === 2)
+    let currentStep = 1;
+    let stepStatusText = 'Donation confirmed on Sepolia. Awaiting first milestone from NGO.';
+
+    if (milestones.length === 0) {
+      currentStep = 2; // Step 1 is done, Step 2 is active / awaiting
+      stepStatusText = 'Awaiting first milestone: No on-chain progress milestone has been recorded by the NGO yet.';
+    } else {
+      const hasReleased = milestones.some((m) => m.statusCode === 2);
+      const hasRequested = milestones.some((m) => m.statusCode === 1);
+
+      if (hasReleased) {
+        currentStep = 4;
+        const releasedCount = milestones.filter((m) => m.statusCode === 2).length;
+        stepStatusText = `Funds released for ${releasedCount} milestone(s) to partner NGO wallet.`;
+      } else if (hasRequested) {
+        currentStep = 3;
+        const reqCount = milestones.filter((m) => m.statusCode === 1).length;
+        stepStatusText = `Disbursement requested for ${reqCount} milestone(s). Awaiting release execution.`;
+      } else {
+        currentStep = 2;
+        stepStatusText = `${milestones.length} on-chain milestone(s) recorded by partner NGO.`;
+      }
+    }
+
+    return {
+      success: true,
+      contractAddress: CONTRACT_ADDRESS,
+      donationCount: overview.donationCount,
+      milestoneCount: overview.milestoneCount,
+      ngoWallet: overview.ngoWallet,
+      balanceEth: balance.balanceEth,
+      milestones,
+      currentStep,
+      stepStatusText,
+    };
+  } catch (error) {
+    console.error('Error fetching contract milestone state:', error);
+    return {
+      success: false,
+      contractAddress: CONTRACT_ADDRESS,
+      donationCount: 0,
+      milestoneCount: 0,
+      ngoWallet: null,
+      balanceEth: '0',
+      milestones: [],
+      currentStep: 2,
+      stepStatusText: 'Unable to reach Sepolia RPC. Retrying...',
+      error: error.message,
+    };
+  }
+}
