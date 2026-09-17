@@ -104,7 +104,7 @@ export function parseContractError(error) {
 
   // Pending request already in wallet
   if (error.code === -32002) {
-    return 'A wallet request is already pending. Please check your MetaMask extension.';
+    return 'A wallet request is already pending. Please check your wallet extension.';
   }
 
   return error.reason || error.message || 'Donation transaction failed. Please try again.';

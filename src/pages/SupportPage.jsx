@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import {
   CircleHelp,
@@ -8,7 +8,6 @@ import {
   CheckCircle2,
   Send,
   MessageSquare,
-  ShieldCheck,
 } from 'lucide-react';
 import MainLayout from '../components/layout/MainLayout';
 import Button from '../components/ui/Button';
@@ -73,24 +72,13 @@ export default function SupportPage() {
 
   // ─── Report Issue Form State ───
   const [issueType, setIssueType] = useState('Donation issue');
-  const [selectedDonationId, setSelectedDonationId] = useState('');
+  const [selectedDonationId, setSelectedDonationId] = useState(
+    location.state?.preselectedDonationId || ''
+  );
   const [issueDescription, setIssueDescription] = useState('');
   const [reportError, setReportError] = useState('');
   const [reportSuccess, setReportSuccess] = useState(false);
   const [reportLoading, setReportLoading] = useState(false);
-
-  // Preselect donation if passed from Donation Details
-  useEffect(() => {
-    if (location.state?.preselectedDonationId) {
-      setSelectedDonationId(location.state.preselectedDonationId);
-    }
-  }, [location.state]);
-
-  // Keep contact name/email in sync if user logs in
-  useEffect(() => {
-    if (user?.name && !contactName) setContactName(user.name);
-    if (user?.email && !contactEmail) setContactEmail(user.email);
-  }, [user]);
 
   // ─── Contact Submit Handler ───
   const handleContactSubmit = async (e) => {

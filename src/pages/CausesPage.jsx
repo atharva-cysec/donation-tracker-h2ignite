@@ -234,6 +234,7 @@ export default function CausesPage() {
           <Search className="w-4 h-4 text-[#9BAB9E] absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
+            aria-label="Search causes by name or NGO"
             placeholder="Search by cause or NGO..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}

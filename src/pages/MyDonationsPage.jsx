@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Heart, Search, Filter } from 'lucide-react';
+import { Heart, Search } from 'lucide-react';
 import MainLayout from '../components/layout/MainLayout';
 import { DonationActivityList, formatINR } from '../components/dashboard/DonationCard';
 import { getStoredDonations } from '../data/mockDonations';
@@ -147,6 +147,7 @@ export default function MyDonationsPage() {
           <Search className="w-3.5 h-3.5 text-[#9BAB9E] absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
+            aria-label="Search donations by cause or NGO"
             placeholder="Search cause or NGO..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}

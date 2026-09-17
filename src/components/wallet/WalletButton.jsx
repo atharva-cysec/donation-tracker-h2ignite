@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Wallet, AlertCircle, Check, Copy, LogOut, ChevronDown, ExternalLink, X } from 'lucide-react';
+import { Wallet, AlertCircle, Check, Copy, LogOut, ChevronDown, ExternalLink } from 'lucide-react';
 import { useWallet } from '../../context/WalletContext';
 
 /**
@@ -221,9 +221,9 @@ export default function WalletButton() {
 
             {walletError.includes('required') && (
               <div className="mb-4 p-3 bg-[#FAFAF7] rounded-xl border border-[#E4E8E5] text-[11px] text-[#68746F] text-left">
-                <p className="font-semibold text-[#1D2925] mb-0.5">Need a wallet?</p>
+                <p className="font-semibold text-[#1D2925] mb-0.5">Need an Ethereum wallet?</p>
                 <p>
-                  Install a browser extension like MetaMask to enable Ethereum Sepolia verification.
+                  Install a Web3 browser extension like Brave Wallet or MetaMask to enable Ethereum Sepolia verification.
                 </p>
                 <a
                   href="https://metamask.io/download/"
@@ -231,7 +231,7 @@ export default function WalletButton() {
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 text-[#2F7D5B] font-semibold mt-1.5 hover:underline"
                 >
-                  <span>Install MetaMask</span>
+                  <span>Get Web3 Wallet</span>
                   <ExternalLink className="w-3 h-3" />
                 </a>
               </div>

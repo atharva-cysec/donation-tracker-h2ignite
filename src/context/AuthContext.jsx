@@ -1,6 +1,6 @@
 import { createContext, useContext, useCallback } from 'react';
 import useLocalStorage from '../hooks/useLocalStorage';
-import { demoUsers, isDemoEmail, findDemoUser } from '../data/demoUsers';
+import { isDemoEmail, findDemoUser } from '../data/demoUsers';
 
 // ─── Storage Keys ─────────────────────────────────────────────────────────────
 const STORAGE_KEY = 'trustdonate_user';

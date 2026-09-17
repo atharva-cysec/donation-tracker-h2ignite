@@ -123,7 +123,7 @@ export default function CauseDetailsPage() {
     try {
       const signer = await getSigner();
       if (!signer) {
-        throw new Error('Unable to access wallet signer. Please unlock MetaMask.');
+        throw new Error('Unable to access wallet signer. Please unlock your wallet.');
       }
 
       const result = await submitDonation({
@@ -473,7 +473,7 @@ export default function CauseDetailsPage() {
                     onClick={connectWallet}
                     className="text-xs font-bold text-[#2F7D5B] hover:text-[#27684C] bg-white px-3 py-1.5 rounded-lg border border-[#E4E8E5] shadow-2xs cursor-pointer"
                   >
-                    Connect MetaMask
+                    Connect Wallet
                   </button>
                 </div>
               ) : !isSepolia ? (

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import {
   ScanLine,
   CheckCircle2,
@@ -9,7 +9,6 @@ import {
   ExternalLink,
   ShieldCheck,
   Layers,
-  Coins,
   AlertCircle,
 } from 'lucide-react';
 import { formatINR, StatusBadge } from './DonationCard';
@@ -28,7 +27,7 @@ const DEMO_STAGES = [
     id: 1,
     title: 'Donation Received',
     description: 'Your donation has been recorded.',
-    updateTemplate: (ngo) => 'Donation received and registered for verified milestone allocation.',
+    updateTemplate: (_ngo) => 'Donation received and registered for verified milestone allocation.',
   },
   {
     id: 2,
@@ -59,9 +58,45 @@ export default function ImpactTracker({ selectedDonation }) {
   const [lastRefreshed, setLastRefreshed] = useState(null);
   const [onChainError, setOnChainError] = useState(null);
 
-  // Fetch real milestone data from Sepolia when a verified donation is selected
-  const loadOnChainMilestones = useCallback(async () => {
-    if (!isVerified) return;
+  // Safe on-chain milestone loading with cancellation flag to prevent race conditions
+  useEffect(() => {
+    let isMounted = true;
+    if (!isVerified) {
+      return () => {
+        isMounted = false;
+      };
+    }
+
+    const fetchState = async () => {
+      try {
+        setIsLoadingOnChain(true);
+        setOnChainError(null);
+        const state = await fetchContractMilestoneState();
+        if (isMounted) {
+          setOnChainState(state);
+          setLastRefreshed(new Date());
+        }
+      } catch (err) {
+        if (isMounted) {
+          console.warn('Could not fetch Sepolia milestones:', err);
+          setOnChainError(err.message || 'Failed to query Sepolia contract');
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoadingOnChain(false);
+        }
+      }
+    };
+
+    fetchState();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isVerified, selectedDonation?.id]);
+
+  const handleRefresh = async () => {
+    if (!isVerified || isLoadingOnChain) return;
     setIsLoadingOnChain(true);
     setOnChainError(null);
     try {
@@ -74,15 +109,7 @@ export default function ImpactTracker({ selectedDonation }) {
     } finally {
       setIsLoadingOnChain(false);
     }
-  }, [isVerified]);
-
-  useEffect(() => {
-    if (isVerified) {
-      loadOnChainMilestones();
-    } else {
-      setOnChainState(null);
-    }
-  }, [isVerified, selectedDonation?.id, loadOnChainMilestones]);
+  };
 
   // Determine stage progression
   let stages = [];
@@ -202,7 +229,7 @@ export default function ImpactTracker({ selectedDonation }) {
               </span>
               <button
                 type="button"
-                onClick={loadOnChainMilestones}
+                onClick={handleRefresh}
                 disabled={isLoadingOnChain}
                 title="Refresh on-chain milestone status from Sepolia"
                 className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#68746F] hover:text-[#2F7D5B] bg-white border border-[#E4E8E5] hover:border-[#C8DFD2] px-2.5 py-1 rounded-lg transition-colors cursor-pointer disabled:opacity-50 shadow-2xs"
@@ -433,6 +460,14 @@ export default function ImpactTracker({ selectedDonation }) {
                   </div>
                 </div>
 
+                {/* On-Chain RPC Warning Notice if error */}
+                {onChainError && (
+                  <div className="mb-4 text-xs text-amber-800 bg-amber-50 border border-amber-200 px-3.5 py-2.5 rounded-xl flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+                    <span>Unable to refresh Sepolia milestone data. Showing cached contract state.</span>
+                  </div>
+                )}
+
                 {/* State A: 0 Milestones on chain */}
                 {!onChainState?.milestones || onChainState.milestones.length === 0 ? (
                   <div className="bg-[#FAFAF7] rounded-xl border border-dashed border-[#C8DFD2] p-5 sm:p-6 text-center">
@@ -449,13 +484,32 @@ export default function ImpactTracker({ selectedDonation }) {
 
                     <div className="inline-flex flex-wrap items-center justify-center gap-2 text-[11px] text-[#68746F] bg-white px-3 py-1.5 rounded-lg border border-[#E4E8E5]">
                       <span>NGO Wallet:</span>
-                      <span className="font-mono font-semibold text-[#1D2925]">
-                        {onChainState?.ngoWallet
-                          ? `${onChainState.ngoWallet.slice(0, 8)}...${onChainState.ngoWallet.slice(-6)}`
-                          : '0x5392...B627'}
-                      </span>
+                      <a
+                        href={getExplorerAddressUrl(onChainState?.ngoWallet || '0x5392aF7F36f70ecB726550C6b3465175c260B627')}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-mono font-semibold text-[#1D2925] hover:text-[#2F7D5B] inline-flex items-center gap-1"
+                        title="View NGO wallet on Etherscan"
+                      >
+                        <span>
+                          {onChainState?.ngoWallet
+                            ? `${onChainState.ngoWallet.slice(0, 8)}...${onChainState.ngoWallet.slice(-6)}`
+                            : '0x5392...B627'}
+                        </span>
+                        <ExternalLink className="w-2.5 h-2.5 text-[#9BAB9E]" />
+                      </a>
                       <span>·</span>
-                      <span>Milestones Recorded: 0</span>
+                      <span>Contract:</span>
+                      <a
+                        href={getExplorerAddressUrl(CONTRACT_ADDRESS)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-mono font-semibold text-[#1D2925] hover:text-[#2F7D5B] inline-flex items-center gap-1"
+                        title="View contract on Etherscan"
+                      >
+                        <span>{CONTRACT_ADDRESS.slice(0, 6)}...{CONTRACT_ADDRESS.slice(-4)}</span>
+                        <ExternalLink className="w-2.5 h-2.5 text-[#9BAB9E]" />
+                      </a>
                     </div>
 
                     <p className="text-[11px] text-[#9BAB9E] mt-3">
@@ -468,9 +522,9 @@ export default function ImpactTracker({ selectedDonation }) {
                   <div className="space-y-3">
                     <div className="grid grid-cols-1 gap-3">
                       {onChainState.milestones.map((ms) => {
-                        const isPending = ms.statusCode === 0;
                         const isRequested = ms.statusCode === 1;
                         const isReleased = ms.statusCode === 2;
+                        const isPending = ms.statusCode === 0 || (!isRequested && !isReleased);
 
                         return (
                           <div
@@ -520,7 +574,7 @@ export default function ImpactTracker({ selectedDonation }) {
                               ) : (
                                 <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-amber-800 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-full">
                                   <Clock className="w-3.5 h-3.5" />
-                                  Pending Request
+                                  {isPending ? 'Pending Request' : 'Pending'}
                                 </span>
                               )}
                             </div>

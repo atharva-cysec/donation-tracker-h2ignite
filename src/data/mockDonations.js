@@ -61,7 +61,7 @@ function getActiveUserId(explicitUserId) {
       const user = JSON.parse(saved);
       return user?.id || null;
     }
-  } catch (err) {
+  } catch {
     // ignore
   }
   return null;

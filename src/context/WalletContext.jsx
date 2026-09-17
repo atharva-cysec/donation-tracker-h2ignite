@@ -237,7 +237,7 @@ export function WalletProvider({ children }) {
             provider.off('accountsChanged', handleAccountsChanged);
             provider.off('chainChanged', handleChainChanged);
           }
-        } catch (e) {
+        } catch {
           // Ignore cleanup errors from third-party extensions
         }
       };

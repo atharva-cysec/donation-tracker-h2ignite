@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ShieldCheck, Lock, ExternalLink, Calendar, Heart, CircleHelp } from 'lucide-react';
+import { ArrowLeft, ShieldCheck, Lock, ExternalLink, Calendar, CircleHelp } from 'lucide-react';
 import MainLayout from '../components/layout/MainLayout';
 import ImpactTracker from '../components/dashboard/ImpactTracker';
 import { formatINR, StatusBadge } from '../components/dashboard/DonationCard';

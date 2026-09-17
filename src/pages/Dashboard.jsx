@@ -125,32 +125,29 @@ function Dashboard() {
 
   const donations = useMemo(() => getStoredDonations(user?.id), [user?.id]);
 
-  // Active donation selected for the Impact Tracker
-  const [selectedDonation, setSelectedDonation] = useState(null);
+  // Active donation ID selected for the Impact Tracker
+  const [selectedDonationId, setSelectedDonationId] = useState(
+    location.state?.selectedDonationId || null
+  );
 
-  // Reset selected donation if active user changes
-  useEffect(() => {
-    setSelectedDonation(null);
-  }, [user?.id]);
+  // Derive selectedDonation directly from donations array; auto-resets if user changes
+  const selectedDonation = useMemo(() => {
+    if (!selectedDonationId) return null;
+    return donations.find((d) => d.id === selectedDonationId) || null;
+  }, [donations, selectedDonationId]);
 
-  // Handle cross-page navigation state from My Donations or Cause Details safely
+  // Handle cross-page navigation scroll safely
   useEffect(() => {
-    const targetId = location.state?.selectedDonationId;
-    if (targetId && selectedDonation?.id !== targetId) {
-      const target = donations.find((d) => d.id === targetId);
-      if (target) {
-        setSelectedDonation(target);
-        if (location.state.scrollToTracker) {
-          setTimeout(() => {
-            trackerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }, 120);
-        }
-      }
+    if (location.state?.scrollToTracker && selectedDonationId) {
+      const timer = setTimeout(() => {
+        trackerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 120);
+      return () => clearTimeout(timer);
     }
-  }, [location.state?.selectedDonationId, location.state?.scrollToTracker, donations, selectedDonation?.id]);
+  }, [location.state?.scrollToTracker, selectedDonationId]);
 
   const handleCheckStatus = (donation) => {
-    setSelectedDonation(donation);
+    setSelectedDonationId(donation.id);
     setTimeout(() => {
       trackerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 60);
