@@ -335,8 +335,10 @@ export default function CauseDetailsPage() {
         >
           <div className="bg-white rounded-2xl border border-[#E4E8E5] max-w-md w-full p-6 sm:p-7 shadow-2xl relative">
             <button
-              onClick={() => setIsConfirmModalOpen(false)}
-              className="absolute top-5 right-5 text-[#9BAB9E] hover:text-[#1D2925] p-1 rounded-lg"
+              type="button"
+              onClick={() => !isSubmitting && setIsConfirmModalOpen(false)}
+              disabled={isSubmitting}
+              className="absolute top-5 right-5 text-[#9BAB9E] hover:text-[#1D2925] disabled:opacity-40 disabled:cursor-not-allowed p-1 rounded-lg transition-colors cursor-pointer"
               aria-label="Close modal"
             >
               <X className="w-5 h-5" />

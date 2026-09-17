@@ -1,4 +1,5 @@
-import { ArrowRight, Clock, CheckCircle2, AlertCircle, Eye, ScanLine } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { ArrowRight, Clock, CheckCircle2, AlertCircle, Eye, ScanLine, Heart } from 'lucide-react';
 
 /**
  * Format amount in INR currency format.
@@ -71,8 +72,23 @@ export function DonationActivityList({
 }) {
   if (!donations || donations.length === 0) {
     return (
-      <div className="bg-white rounded-xl border border-[#E4E8E5] p-8 text-center text-sm text-[#68746F]">
-        No donations found matching your criteria.
+      <div className="bg-white rounded-xl border border-dashed border-[#E4E8E5] p-10 sm:p-12 text-center shadow-xs">
+        <div className="w-10 h-10 rounded-xl bg-[#EAF3EE] flex items-center justify-center mx-auto mb-3 text-[#2F7D5B]">
+          <Heart className="w-5 h-5" />
+        </div>
+        <p className="text-sm font-bold text-[#1D2925] mb-1">
+          No donations yet
+        </p>
+        <p className="text-xs text-[#68746F] max-w-xs mx-auto mb-5 leading-relaxed">
+          Explore a verified cause to make your first transparent contribution.
+        </p>
+        <Link
+          to="/causes"
+          className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-[#2F7D5B] hover:bg-[#27684C] px-4 py-2 rounded-lg transition-colors shadow-xs"
+        >
+          <span>Explore Causes</span>
+          <ArrowRight className="w-3.5 h-3.5" />
+        </Link>
       </div>
     );
   }

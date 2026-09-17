@@ -9,6 +9,7 @@ import CauseDetailsPage from './pages/CauseDetailsPage';
 import MyDonationsPage from './pages/MyDonationsPage';
 import DonationDetailsPage from './pages/DonationDetailsPage';
 import SettingsPage from './pages/SettingsPage';
+import NotFoundPage from './pages/NotFoundPage';
 
 function App() {
   return (
@@ -69,9 +70,9 @@ function App() {
             }
           />
 
-          {/* ── Redirects ── */}
+          {/* ── Redirects & 404 ── */}
           <Route path="/" element={<Navigate to="/login" replace />} />
-          <Route path="*" element={<Navigate to="/login" replace />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>
